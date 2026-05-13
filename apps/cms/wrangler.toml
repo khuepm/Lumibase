@@ -1,0 +1,24 @@
+name = "lumibase-cms"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Hyperdrive binding pools PostgreSQL connections at the edge.
+# Run `wrangler hyperdrive create lumibase-hyperdrive --connection-string=...`
+# and paste the resulting id below.
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "REPLACE_WITH_HYPERDRIVE_ID"
+
+# Cloudflare KV for caching configurations and permissions (Strict Rule #4).
+# [[kv_namespaces]]
+# binding = "CONFIG_CACHE"
+# id = "REPLACE_WITH_KV_ID"
+
+# Cloudflare R2 bucket for media (Strict Rule: storage).
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "lumibase-media"
+
+[vars]
+LUMIBASE_ENV = "development"
