@@ -40,7 +40,7 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 - [x] `[BE]` Endpoint diff `/collections/diff` + `PUT /collections/:name/schema`.
 - [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
 - [ ] `[SDK]` Type-safe client cho schema.
-- [ ] `[BE]` Script CLI `apps/cms/scripts/typegen.ts` + alias `lumibase typegen`.
+- [x] `[BE]` Script CLI `apps/cms/scripts/typegen.ts` + alias `lumibase typegen`.
 - [ ] `[FE]` Module *Settings → Data Model* (list collection).
 - [ ] `[FE]` Collection wizard 3 bước.
 - [ ] `[FE]` Collection detail tabs (Fields, Display, Archive, Raw JSON).
