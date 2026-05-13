@@ -76,6 +76,51 @@ components:
         version: { type: string }
         apiVersion: { type: integer }
         env: { type: string }
+    Collection:
+      type: object
+      required: [id, siteId, name]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        name: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+        singleton: { type: boolean }
+        icon: { type: string, nullable: true }
+        color: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+        displayTemplate: { type: string, nullable: true }
+        sortField: { type: string, nullable: true }
+        archiveField: { type: string, nullable: true }
+        archiveValue: { type: string, nullable: true }
+        accountability: { type: string, enum: [all, activity, none] }
+        versioning: { type: boolean }
+        meta: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Field:
+      type: object
+      required: [id, name, type, interface]
+      properties:
+        id: { type: string }
+        collectionId: { type: string }
+        name: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+        type: { type: string }
+        interface: { type: string }
+        display: { type: string, nullable: true }
+        options: { type: object, additionalProperties: true }
+        displayOptions: { type: object, additionalProperties: true }
+        validation: { type: object, additionalProperties: true }
+        conditions:
+          type: array
+          items: { type: object, additionalProperties: true }
+        required: { type: boolean }
+        readonly: { type: boolean }
+        hidden: { type: boolean }
+        encrypted: { type: boolean }
+        versioned: { type: boolean }
+        rawEnabled: { type: boolean }
+        width: { type: string, enum: [half, full, fill] }
+        group: { type: string, nullable: true }
+        sortOrder: { type: integer }
 
 paths:
   /utils/health:
@@ -98,6 +143,123 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Version' }
+  /collections:
+    get:
+      summary: List collections in the active site
+      parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Collection' }
+    post:
+      summary: Create a collection
+      parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Collection' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Collection' }
+        '409':
+          description: Collection already exists
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /collections/{name}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - name: name
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get collection by name
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Collection' }
+    patch:
+      summary: Update collection metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Collection' }
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete collection (rejected when relations reference it)
+      responses:
+        '204': { description: Deleted }
+  /collections/{name}/fields:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - name: name
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: List fields of a collection
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Field' }
+  /collections/{name}/fields/{field}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: name, in: path, required: true, schema: { type: string } }
+      - { name: field, in: path, required: true, schema: { type: string } }
+    put:
+      summary: Upsert a field (idempotent by name)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Field' }
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete a field
+      responses:
+        '204': { description: Deleted }
+  /collections/{name}/compiled:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: name, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Get the cached compiled schema for ItemService
+      responses:
+        '200':
+          description: OK
   /auth/me:
     get:
       summary: Current authenticated principal for active site
