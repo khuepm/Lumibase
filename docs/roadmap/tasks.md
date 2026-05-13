@@ -34,11 +34,11 @@ Definition of done Phase 0:
 
 Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permission đầy đủ).
 
-- [ ] `[DB]` Bảng `collections`, `fields`, `relations`.
-- [ ] `[BE]` `SchemaService` (CRUD + compile cache KV).
+- [x] `[DB]` Bảng `collections`, `fields`, `relations`.
+- [x] `[BE]` `SchemaService` (CRUD + compile cache KV).
 - [ ] `[BE]` Endpoints `/collections`, `/fields`, `/relations` (xem `api/hono-api-spec.md`).
 - [ ] `[BE]` Endpoint diff `/collections/diff` + `PUT /collections/:name/schema`.
-- [ ] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
+- [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
 - [ ] `[SDK]` Type-safe client cho schema.
 - [ ] `[FE]` Module *Settings → Data Model* (list collection).
 - [ ] `[FE]` Collection wizard 3 bước.

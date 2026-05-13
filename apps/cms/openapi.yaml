@@ -260,12 +260,67 @@ paths:
       responses:
         '200':
           description: OK
+  /relations:
+    get:
+      summary: List relations in the active site
+      parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Relation' }
+    post:
+      summary: Create a relation
+      parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Relation' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Relation' }
+  /relations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: Delete a relation
+      responses:
+        '204': { description: Deleted }
   /auth/me:
     get:
       summary: Current authenticated principal for active site
       parameters:
         - $ref: '#/components/parameters/SiteHeader'
       responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthMe' }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '400':
+          description: Missing tenant header
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
         '200':
           description: OK
           content:

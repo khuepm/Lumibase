@@ -89,6 +89,17 @@ export interface FieldInput {
   sortOrder?: number;
 }
 
+export interface RelationInput {
+  manyCollection: string;
+  manyField: string;
+  oneCollection: string;
+  oneField?: string | null;
+  junctionCollection?: string | null;
+  sortField?: string | null;
+  onDelete?: 'restrict' | 'cascade' | 'set null' | 'no action';
+  meta?: Record<string, unknown>;
+}
+
 export class SchemaServiceError extends Error {
   constructor(public code: string, message: string, public status = 400) {
     super(message);
@@ -254,6 +265,47 @@ export class SchemaService {
       throw new SchemaServiceError('NOT_FOUND', `Field "${fieldName}" not found.`, 404);
     }
     await this.invalidate(collection.name);
+    return { ok: true } as const;
+  }
+
+  // ---------- Relations ----------
+
+  async listRelations() {
+    const { db, siteId } = this.deps;
+    return db
+      .select()
+      .from(relations)
+      .where(scopeSite(relations.siteId, siteId))
+      .orderBy(asc(relations.manyCollection), asc(relations.manyField));
+  }
+
+  async createRelation(input: RelationInput) {
+    const { db, siteId } = this.deps;
+    const [row] = await db
+      .insert(relations)
+      .values({ ...input, siteId })
+      .returning();
+    // Invalidate both sides of the relation.
+    await this.invalidate(input.manyCollection);
+    if (input.oneCollection) await this.invalidate(input.oneCollection);
+    if (input.junctionCollection) await this.invalidate(input.junctionCollection);
+    return row;
+  }
+
+  async deleteRelation(id: string) {
+    const { db, siteId } = this.deps;
+    const [existing] = await db
+      .select()
+      .from(relations)
+      .where(and(scopeSite(relations.siteId, siteId), eq(relations.id, id)))
+      .limit(1);
+    if (!existing) {
+      throw new SchemaServiceError('NOT_FOUND', `Relation "${id}" not found.`, 404);
+    }
+    await db.delete(relations).where(eq(relations.id, id));
+    await this.invalidate(existing.manyCollection);
+    if (existing.oneCollection) await this.invalidate(existing.oneCollection);
+    if (existing.junctionCollection) await this.invalidate(existing.junctionCollection);
     return { ok: true } as const;
   }
 

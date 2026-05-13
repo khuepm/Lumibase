@@ -8,6 +8,7 @@ import { withTenant } from './middleware/tenant';
 import { authRouter } from './routes/auth';
 import { collectionsRouter } from './routes/collections';
 import { deliverRouter } from './routes/deliver';
+import { relationsRouter } from './routes/relations';
 import { utilsRouter } from './routes/utils';
 
 const app = new Hono<AppEnv>();
@@ -36,6 +37,7 @@ app.get('/health', (c) =>
 const api = new Hono<AppEnv>();
 api.use('*', withTenant(), withAuth(), withDb());
 api.route('/auth', authRouter);
+api.route('/relations', relationsRouter);
 api.route('/collections', collectionsRouter);
 // Future routers (Phase A+): items, permissions, presets, ...
 
