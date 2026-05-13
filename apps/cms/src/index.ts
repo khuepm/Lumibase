@@ -37,8 +37,9 @@ app.get('/health', (c) =>
 const api = new Hono<AppEnv>();
 api.use('*', withTenant(), withAuth(), withDb());
 api.route('/auth', authRouter);
-api.route('/relations', relationsRouter);
 api.route('/collections', collectionsRouter);
+api.route('/relations', relationsRouter);
+api.route('/typegen', typegenRouter);
 // Future routers (Phase A+): items, permissions, presets, ...
 
 app.route('/api/v1', api);

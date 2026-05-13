@@ -366,6 +366,46 @@ paths:
       summary: Delete a relation
       responses:
         '204': { description: Deleted }
+  /typegen/schema:
+    get:
+      summary: Get type generation manifest for the active site
+      parameters:
+        - $ref: '#/components/parameters/SiteHeader'
+        - { name: include, in: query, schema: { type: string }, description: 'Comma-separated collection names to include' }
+        - { name: exclude, in: query, schema: { type: string }, description: 'Comma-separated collection names to exclude' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      version: { type: integer }
+                      site: { type: string }
+                      collections:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name: { type: string }
+                            primaryKey: { type: string }
+                            fields:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name: { type: string }
+                                  type: { type: string }
+                                  required: { type: boolean }
+                                  nullable: { type: boolean }
+                                  branded: { type: string }
+                                  kind: { type: string, enum: [m2o, o2m, m2m, m2a] }
+                                  target: { type: string }
+                                  enum: { type: array, items: { type: string } }
   /auth/me:
     get:
       summary: Current authenticated principal for active site
