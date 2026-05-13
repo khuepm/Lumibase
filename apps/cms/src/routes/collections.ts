@@ -1,0 +1,188 @@
+import { Hono } from 'hono';
+import { z } from 'zod';
+import type { AppEnv } from '../env';
+import { SchemaService, SchemaServiceError } from '../services/schema-service';
+
+/**
+ * /collections, /fields, /relations — Phase A schema admin surface.
+ *
+ * Permission enforcement is intentionally a stub: any authenticated user
+ * can manage schema until Phase C wires PermissionService. The endpoints
+ * already use site-scoped queries so multi-tenancy holds.
+ */
+
+const collectionInputSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(63)
+    .regex(/^[a-z][a-z0-9_]{0,62}$/),
+  singleton: z.boolean().optional(),
+  icon: z.string().nullable().optional(),
+  color: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+  displayTemplate: z.string().nullable().optional(),
+  sortField: z.string().nullable().optional(),
+  archiveField: z.string().nullable().optional(),
+  archiveValue: z.string().nullable().optional(),
+  accountability: z.enum(['all', 'activity', 'none']).optional(),
+  versioning: z.boolean().optional(),
+  meta: z.record(z.unknown()).optional(),
+});
+
+const collectionPatchSchema = collectionInputSchema.partial().omit({ name: true });
+
+const fieldInputSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(63)
+    .regex(/^[a-z][a-z0-9_]{0,62}$/),
+  type: z.string().min(1),
+  interface: z.string().min(1),
+  display: z.string().nullable().optional(),
+  options: z.record(z.unknown()).optional(),
+  displayOptions: z.record(z.unknown()).optional(),
+  validation: z.record(z.unknown()).optional(),
+  conditions: z.array(z.unknown()).optional(),
+  required: z.boolean().optional(),
+  readonly: z.boolean().optional(),
+  hidden: z.boolean().optional(),
+  encrypted: z.boolean().optional(),
+  versioned: z.boolean().optional(),
+  rawEnabled: z.boolean().optional(),
+  width: z.enum(['half', 'full', 'fill']).optional(),
+  group: z.string().nullable().optional(),
+  sortOrder: z.number().int().optional(),
+});
+
+const buildService = (c: { get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never; env: AppEnv['Bindings'] }) =>
+  new SchemaService({
+    db: c.get('db') as never,
+    siteId: c.get('siteId') as unknown as string,
+    cache: c.env.CONFIG_CACHE,
+  });
+
+const toError = (err: unknown) => {
+  if (err instanceof SchemaServiceError) {
+    return { status: err.status, body: { errors: [{ code: err.code, message: err.message }] } };
+  }
+  console.error('[schema] unexpected error', err);
+  return {
+    status: 500 as const,
+    body: { errors: [{ code: 'INTERNAL', message: 'Unhandled schema error.' }] },
+  };
+};
+
+export const collectionsRouter = new Hono<AppEnv>();
+
+collectionsRouter.get('/', async (c) => {
+  try {
+    const data = await buildService(c).listCollections();
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.post('/', async (c) => {
+  const parsed = collectionInputSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json(
+      { errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message, path: i.path.map(String) })) },
+      400,
+    );
+  }
+  try {
+    const data = await buildService(c).createCollection(parsed.data);
+    return c.json({ data }, 201);
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.get('/:name', async (c) => {
+  const data = await buildService(c).getCollection(c.req.param('name'));
+  if (!data) {
+    return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Collection not found.' }] }, 404);
+  }
+  return c.json({ data });
+});
+
+collectionsRouter.patch('/:name', async (c) => {
+  const parsed = collectionPatchSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json(
+      { errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) },
+      400,
+    );
+  }
+  try {
+    const data = await buildService(c).updateCollection(c.req.param('name'), parsed.data);
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.delete('/:name', async (c) => {
+  try {
+    await buildService(c).deleteCollection(c.req.param('name'));
+    return c.body(null, 204);
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+// ---------- Fields nested under collection ----------
+
+collectionsRouter.get('/:name/fields', async (c) => {
+  try {
+    const data = await buildService(c).listFields(c.req.param('name'));
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.put('/:name/fields/:field', async (c) => {
+  const parsed = fieldInputSchema.safeParse({ ...(await c.req.json()), name: c.req.param('field') });
+  if (!parsed.success) {
+    return c.json(
+      { errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) },
+      400,
+    );
+  }
+  try {
+    const data = await buildService(c).upsertField(c.req.param('name'), parsed.data);
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.delete('/:name/fields/:field', async (c) => {
+  try {
+    await buildService(c).deleteField(c.req.param('name'), c.req.param('field'));
+    return c.body(null, 204);
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+// ---------- Compiled (read-only convenience) ----------
+
+collectionsRouter.get('/:name/compiled', async (c) => {
+  const data = await buildService(c).getCompiled(c.req.param('name'));
+  if (!data) {
+    return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Collection not found.' }] }, 404);
+  }
+  return c.json({ data });
+});

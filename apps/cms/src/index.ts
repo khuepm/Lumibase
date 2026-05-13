@@ -6,6 +6,7 @@ import { withDb } from './middleware/db';
 import { withLogger } from './middleware/logger';
 import { withTenant } from './middleware/tenant';
 import { authRouter } from './routes/auth';
+import { collectionsRouter } from './routes/collections';
 import { deliverRouter } from './routes/deliver';
 import { utilsRouter } from './routes/utils';
 
@@ -35,7 +36,8 @@ app.get('/health', (c) =>
 const api = new Hono<AppEnv>();
 api.use('*', withTenant(), withAuth(), withDb());
 api.route('/auth', authRouter);
-// Future routers (Phase A+): collections, items, permissions, presets, ...
+api.route('/collections', collectionsRouter);
+// Future routers (Phase A+): items, permissions, presets, ...
 
 app.route('/api/v1', api);
 
