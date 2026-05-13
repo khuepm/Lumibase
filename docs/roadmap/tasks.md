@@ -39,7 +39,7 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 - [x] `[BE]` Endpoints `/collections`, `/fields`, `/relations` (xem `api/hono-api-spec.md`).
 - [x] `[BE]` Endpoint diff `/collections/diff` + `PUT /collections/:name/schema`.
 - [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
-- [ ] `[SDK]` Type-safe client cho schema.
+- [x] `[SDK]` Type-safe client cho schema.
 - [x] `[BE]` Script CLI `apps/cms/scripts/typegen.ts` + alias `lumibase typegen`.
 - [ ] `[FE]` Module *Settings → Data Model* (list collection).
 - [ ] `[FE]` Collection wizard 3 bước.
