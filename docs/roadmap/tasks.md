@@ -36,8 +36,8 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 
 - [x] `[DB]` Bảng `collections`, `fields`, `relations`.
 - [x] `[BE]` `SchemaService` (CRUD + compile cache KV).
-- [ ] `[BE]` Endpoints `/collections`, `/fields`, `/relations` (xem `api/hono-api-spec.md`).
-- [ ] `[BE]` Endpoint diff `/collections/diff` + `PUT /collections/:name/schema`.
+- [x] `[BE]` Endpoints `/collections`, `/fields`, `/relations` (xem `api/hono-api-spec.md`).
+- [x] `[BE]` Endpoint diff `/collections/diff` + `PUT /collections/:name/schema`.
 - [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
 - [ ] `[SDK]` Type-safe client cho schema.
 - [ ] `[FE]` Module *Settings → Data Model* (list collection).
