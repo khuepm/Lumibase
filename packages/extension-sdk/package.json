@@ -1,0 +1,22 @@
+{
+  "name": "@lumibase/extension-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types + helpers for building LumiBase extensions (hooks, endpoints, UI).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@lumibase/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}
