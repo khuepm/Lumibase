@@ -56,6 +56,12 @@ const fieldInputSchema = z.object({
   sortOrder: z.number().int().optional(),
 });
 
+const schemaInputSchema = collectionInputSchema
+  .partial()
+  .extend({
+    fields: z.array(fieldInputSchema).optional(),
+  });
+
 const buildService = (c: { get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never; env: AppEnv['Bindings'] }) =>
   new SchemaService({
     db: c.get('db') as never,
@@ -180,6 +186,44 @@ collectionsRouter.delete('/:name/fields/:field', async (c) => {
 // ---------- Compiled (read-only convenience) ----------
 
 collectionsRouter.get('/:name/compiled', async (c) => {
+
+// ---------- Diff and atomic schema update ----------
+
+collectionsRouter.post('/diff', async (c) => {
+  const body = await c.req.json();
+  const { name } = body;
+  const parsed = schemaInputSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json(
+      { errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) },
+      400,
+    );
+  }
+  try {
+    const data = await buildService(c).diffSchema(name, parsed.data);
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
+
+collectionsRouter.put('/:name/schema', async (c) => {
+  const parsed = schemaInputSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json(
+      { errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) },
+      400,
+    );
+  }
+  try {
+    const data = await buildService(c).updateSchema(c.req.param('name'), parsed.data);
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status);
+  }
+});
   const data = await buildService(c).getCompiled(c.req.param('name'));
   if (!data) {
     return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Collection not found.' }] }, 404);

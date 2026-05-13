@@ -100,6 +100,19 @@ export interface RelationInput {
   meta?: Record<string, unknown>;
 }
 
+export interface SchemaDiff {
+  collection: {
+    added: string[];
+    removed: string[];
+    changed: Array<{ field: string; changes: string[] }>;
+  };
+  fields: {
+    added: Array<{ name: string; type: string }>;
+    removed: string[];
+    changed: Array<{ name: string; changes: string[] }>;
+  };
+}
+
 export class SchemaServiceError extends Error {
   constructor(public code: string, message: string, public status = 400) {
     super(message);
@@ -307,6 +320,75 @@ export class SchemaService {
     if (existing.oneCollection) await this.invalidate(existing.oneCollection);
     if (existing.junctionCollection) await this.invalidate(existing.junctionCollection);
     return { ok: true } as const;
+  }
+
+  async updateSchema(name: string, input: CollectionInput & { fields?: FieldInput[] }) {
+    const current = await this.getCollection(name);
+    if (!current) {
+      throw new SchemaServiceError('NOT_FOUND', `Collection "${name}" not found.`, 404);
+    }
+    const { fields: fieldInputs, ...collectionPatch } = input;
+    const [updated] = await this.deps.db
+      .update(collections)
+      .set({ ...collectionPatch, updatedAt: new Date() })
+      .where(eq(collections.id, current.id))
+      .returning();
+    if (fieldInputs) {
+      for (const f of fieldInputs) {
+        await this.upsertField(name, f);
+      }
+    }
+    await this.invalidate(name);
+    return updated;
+  }
+
+  async diffSchema(name: string, proposed: CollectionInput & { fields?: FieldInput[] }): Promise<SchemaDiff> {
+    const current = await this.getCollection(name);
+    if (!current) {
+      throw new SchemaServiceError('NOT_FOUND', `Collection "${name}" not found.`, 404);
+    }
+    const currentFields = await this.listFields(name);
+
+    const collectionChanges: string[] = [];
+    if (proposed.singleton !== current.singleton) collectionChanges.push('singleton');
+    if (proposed.displayTemplate !== current.displayTemplate) collectionChanges.push('displayTemplate');
+    if (proposed.sortField !== current.sortField) collectionChanges.push('sortField');
+    if (proposed.archiveField !== current.archiveField) collectionChanges.push('archiveField');
+    if (proposed.archiveValue !== current.archiveValue) collectionChanges.push('archiveValue');
+
+    const currentFieldNames = new Set(currentFields.map((f) => f.name));
+    const proposedFieldNames = new Set((proposed.fields ?? []).map((f) => f.name));
+
+    const addedFields = (proposed.fields ?? [])
+      .filter((f) => !currentFieldNames.has(f.name))
+      .map((f) => ({ name: f.name, type: f.type }));
+
+    const removedFields = currentFields.filter((f) => !proposedFieldNames.has(f.name)).map((f) => f.name);
+
+    const changedFields: Array<{ name: string; changes: string[] }> = [];
+    const currentFieldsMap = new Map(currentFields.map((f) => [f.name, f]));
+    for (const f of proposed.fields ?? []) {
+      const existing = currentFieldsMap.get(f.name);
+      if (!existing) continue;
+      const changes: string[] = [];
+      if (f.type !== existing.type) changes.push('type');
+      if (f.interface !== existing.interface) changes.push('interface');
+      if (f.required !== existing.required) changes.push('required');
+      if (changes.length > 0) changedFields.push({ name: f.name, changes });
+    }
+
+    return {
+      collection: {
+        added: [],
+        removed: [],
+        changed: collectionChanges.length > 0 ? [{ field: name, changes: collectionChanges }] : [],
+      },
+      fields: {
+        added: addedFields,
+        removed: removedFields,
+        changed: changedFields,
+      },
+    };
   }
 
   // ---------- Cache ----------

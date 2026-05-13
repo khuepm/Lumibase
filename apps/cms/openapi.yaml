@@ -251,6 +251,72 @@ paths:
       summary: Delete a field
       responses:
         '204': { description: Deleted }
+  /collections/diff:
+    post:
+      summary: Diff a proposed schema against the current collection
+      parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                $ref: '#/components/schemas/Collection'
+                fields:
+                  type: array
+                  items: { $ref: '#/components/schemas/Field' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      collection:
+                        type: object
+                        properties:
+                          added: { type: array, items: { type: string } }
+                          removed: { type: array, items: { type: string } }
+                          changed: { type: array, items: { type: object } }
+                      fields:
+                        type: object
+                        properties:
+                          added: { type: array, items: { type: object } }
+                          removed: { type: array, items: { type: string } }
+                          changed: { type: array, items: { type: object } }
+  /collections/{name}/schema:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: name, in: path, required: true, schema: { type: string } }
+    put:
+      summary: Atomically update collection and its fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                $ref: '#/components/schemas/Collection'
+                fields:
+                  type: array
+                  items: { $ref: '#/components/schemas/Field' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Collection' }
   /collections/{name}/compiled:
     parameters:
       - $ref: '#/components/parameters/SiteHeader'
