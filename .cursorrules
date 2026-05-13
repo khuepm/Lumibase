@@ -1,0 +1,40 @@
+# Lumibase AI System Instructions
+
+## Project Identity
+Name: Lumibase
+Description: A Directus-inspired, Edge-native, Production-ready Headless CMS.
+Core Philosophy: Multi-tenant by default, edge-first caching, config-as-code, and 1-roundtrip page hydration.
+
+## Tech Stack
+- Monorepo: Turborepo, pnpm.
+- Backend (CMS API): Hono.js, Cloudflare Workers.
+- Database: PostgreSQL (via Cloudflare Hyperdrive), Drizzle ORM.
+- Storage: Cloudflare R2.
+- Authentication: Logto (OIDC).
+- Email: Resend + React Email.
+- Frontend (Demo/Client): Next.js 14+ (App Router), TailwindCSS, Shadcn UI, CVA.
+
+## STRICT ARCHITECTURAL RULES (CRITICAL)
+
+### 1. Database & IDs
+- NEVER use Auto-increment/Serial IDs. 
+- MUST use `nanoid` (string, length 11-21) for all Primary Keys to prevent collision across environments.
+- ALL domain tables MUST include a `site_id` (nanoid) column for Multi-tenancy.
+- Use `JSONB` for dynamic fields, UI configurations, and AI Contexts.
+
+### 2. Multi-tenancy & Permissions
+- All Database queries MUST be scoped by `site_id` (Row-Level Security concept applied at the ORM/Query level).
+- Permissions are defined as Config-as-Code. Do not rely solely on DB rows for core system roles.
+
+### 3. API Design (The 1-Roundtrip Rule)
+- For frontend rendering, prioritize the Hydration Pattern.
+- Endpoint `/api/v1/deliver/page/:slug` MUST return aggregated JSON containing BOTH Page Layout Config AND populated Collection Data.
+- Standardize response formats.
+
+### 4. Caching & Edge
+- Use Cloudflare KV for caching Configurations and Permissions.
+- Implement Tag-based cache invalidation. When an item updates, emit a webhook to invalidate Next.js tags (`revalidateTag`).
+
+### 5. Frontend & UI
+- Parse CMS HTML content using `html-react-parser`. Always replace `<a>` with Next.js `<Link>` and `<img>` with Next.js `<Image>`.
+- Use `class-variance-authority` (cva) and `tailwind-merge` to handle UI configurations sent from the CMS. Do NOT generate raw arbitrary Tailwind classes from the backend unless injected as CSS variables.
