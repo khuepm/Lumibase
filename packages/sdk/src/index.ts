@@ -1,2 +1,3 @@
 export * from './client';
-export type { ID, Locale } from '@lumibase/shared';
+export * from './typegen';
+export type { ID, Locale, Brand } from '@lumibase/shared';
