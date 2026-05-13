@@ -41,11 +41,15 @@ const bulkSchema = z.object({
   items: z.array(z.record(z.unknown())),
 });
 
-const buildService = (c: { get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never }) =>
+const buildService = (c: {
+  get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never;
+  env: AppEnv['Bindings'];
+}) =>
   new ItemService({
     db: c.get('db') as never,
     siteId: c.get('siteId') as unknown as string,
     userId: ((c.get('auth') as unknown as { userId?: string } | null) ?? null)?.userId ?? null,
+    cache: c.env.CONFIG_CACHE,
   });
 
 const toError = (err: unknown) => {
@@ -82,7 +86,7 @@ itemsRouter.get('/:collection', async (c) => {
     return c.json(result);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -96,7 +100,7 @@ itemsRouter.post('/:collection', async (c) => {
     return c.json({ data }, 201);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -110,7 +114,7 @@ itemsRouter.post('/:collection/bulk', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -121,7 +125,7 @@ itemsRouter.get('/:collection/:id', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -135,7 +139,7 @@ itemsRouter.patch('/:collection/:id', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -149,7 +153,7 @@ itemsRouter.put('/:collection/:id', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -159,7 +163,20 @@ itemsRouter.delete('/:collection/:id', async (c) => {
     return c.body(null, 204);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
+  }
+});
+
+itemsRouter.get('/:collection/:id/revisions', async (c) => {
+  try {
+    const data = await buildService(c).listRevisions(
+      c.req.param('collection'),
+      c.req.param('id'),
+    );
+    return c.json({ data });
+  } catch (err) {
+    const { status, body } = toError(err);
+    return c.json(body, status as 400);
   }
 });
 
@@ -173,6 +190,6 @@ itemsRouter.post('/:collection/:id/revert/:revisionId', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });

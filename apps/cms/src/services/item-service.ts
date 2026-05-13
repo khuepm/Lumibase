@@ -7,6 +7,9 @@ import {
   type Database,
 } from '@lumibase/database';
 import { and, asc, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
+import { SchemaService } from './schema-service';
+import { validateItem } from './validation';
+import type { KVNamespace } from '@cloudflare/workers-types';
 
 /**
  * ItemService — generic CRUD over the `items` JSONB store, driven by the
@@ -73,6 +76,8 @@ export class ItemServiceError extends Error {
 
 export interface ItemServiceDeps {
   db: Database;
+  /** Optional KV cache used by SchemaService for compiled manifests. */
+  cache?: KVNamespace;
   siteId: string;
   /** Caller user id; written to revisions/activity for audit. */
   userId?: string | null;
@@ -194,7 +199,14 @@ function buildSort(sort?: string[]): SQL[] {
 }
 
 export class ItemService {
-  constructor(private readonly deps: ItemServiceDeps) {}
+  private readonly schemaService: SchemaService;
+  constructor(private readonly deps: ItemServiceDeps) {
+    this.schemaService = new SchemaService({
+      db: deps.db,
+      siteId: deps.siteId,
+      cache: deps.cache,
+    });
+  }
 
   private async resolveCollection(name: string) {
     const [coll] = await this.deps.db
@@ -229,14 +241,15 @@ export class ItemService {
       .limit(limit)
       .offset(offset);
 
-    const [{ count }] = await this.deps.db
+    const totals = await this.deps.db
       .select({ count: sql<number>`count(*)::int` })
       .from(items)
       .where(where);
+    const total = totals[0]?.count ?? 0;
 
     return {
       data: params.fields ? rows.map((r) => projectFields(r as ItemRow, params.fields!)) : rows,
-      meta: { total: count, limit, offset },
+      meta: { total, limit, offset },
     };
   }
 
@@ -260,18 +273,20 @@ export class ItemService {
 
   async create(collectionName: string, payload: { data: Record<string, unknown>; status?: string; sort?: number }) {
     const coll = await this.resolveCollection(collectionName);
+    const data = await this.runValidation(collectionName, payload.data ?? {}, false);
     const [row] = await this.deps.db
       .insert(items)
       .values({
         siteId: this.deps.siteId,
         collectionId: coll.id,
-        data: payload.data ?? {},
+        data,
         status: payload.status ?? 'draft',
         sort: payload.sort ?? 0,
         userCreated: this.deps.userId ?? null,
         userUpdated: this.deps.userId ?? null,
       })
       .returning();
+    if (!row) throw new ItemServiceError('CREATE_FAILED', 'Failed to insert item.');
     await this.writeRevision(coll.id, row.id, payload.data ?? {}, null);
     await this.writeActivity('create', coll.name, row.id, { data: payload.data });
     return row;
@@ -284,6 +299,10 @@ export class ItemService {
     const merged: ItemRow['data'] = patch.data
       ? { ...(current.data as Record<string, unknown>), ...patch.data }
       : current.data;
+
+    if (patch.data) {
+      await this.runValidation(collectionName, patch.data, true);
+    }
 
     const [row] = await this.deps.db
       .update(items)
@@ -300,6 +319,24 @@ export class ItemService {
     await this.writeRevision(coll.id, id, merged, current.data as Record<string, unknown>);
     await this.writeActivity('update', coll.name, id, { patch });
     return row;
+  }
+
+  private async runValidation(
+    collectionName: string,
+    data: Record<string, unknown>,
+    partial: boolean,
+  ): Promise<Record<string, unknown>> {
+    const compiled = await this.schemaService.getCompiled(collectionName);
+    if (!compiled) return data;
+    const result = validateItem(compiled.fields, data, { partial });
+    if (!result.ok) {
+      throw new ItemServiceError(
+        'VALIDATION',
+        result.issues.map((i) => `${i.field}: ${i.message}`).join('; '),
+        400,
+      );
+    }
+    return result.data;
   }
 
   async replace(collectionName: string, id: string, body: { data: Record<string, unknown>; status?: string; sort?: number }) {
@@ -340,6 +377,21 @@ export class ItemService {
       }
     }
     return out;
+  }
+
+  async listRevisions(collectionName: string, itemId: string) {
+    const coll = await this.resolveCollection(collectionName);
+    return this.deps.db
+      .select()
+      .from(revisions)
+      .where(
+        and(
+          scopeSite(revisions.siteId, this.deps.siteId),
+          eq(revisions.collectionId, coll.id),
+          eq(revisions.itemId, itemId),
+        ),
+      )
+      .orderBy(desc(revisions.createdAt));
   }
 
   async revertRevision(collectionName: string, itemId: string, revisionId: string) {

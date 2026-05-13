@@ -88,7 +88,7 @@ collectionsRouter.get('/', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -105,7 +105,7 @@ collectionsRouter.post('/', async (c) => {
     return c.json({ data }, 201);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -130,7 +130,7 @@ collectionsRouter.patch('/:name', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -140,7 +140,7 @@ collectionsRouter.delete('/:name', async (c) => {
     return c.body(null, 204);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -152,7 +152,7 @@ collectionsRouter.get('/:name/fields', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -169,7 +169,7 @@ collectionsRouter.put('/:name/fields/:field', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -179,19 +179,28 @@ collectionsRouter.delete('/:name/fields/:field', async (c) => {
     return c.body(null, 204);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
 // ---------- Compiled (read-only convenience) ----------
 
 collectionsRouter.get('/:name/compiled', async (c) => {
+  const data = await buildService(c).getCompiled(c.req.param('name'));
+  if (!data) {
+    return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Collection not found.' }] }, 404);
+  }
+  return c.json({ data });
+});
 
 // ---------- Diff and atomic schema update ----------
 
 collectionsRouter.post('/diff', async (c) => {
   const body = await c.req.json();
   const { name } = body;
+  if (!name) {
+    return c.json({ errors: [{ code: 'VALIDATION', message: 'name is required' }] }, 400);
+  }
   const parsed = schemaInputSchema.safeParse(body);
   if (!parsed.success) {
     return c.json(
@@ -200,11 +209,11 @@ collectionsRouter.post('/diff', async (c) => {
     );
   }
   try {
-    const data = await buildService(c).diffSchema(name, parsed.data);
+    const data = await buildService(c).diffSchema(name, parsed.data as never);
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -217,16 +226,10 @@ collectionsRouter.put('/:name/schema', async (c) => {
     );
   }
   try {
-    const data = await buildService(c).updateSchema(c.req.param('name'), parsed.data);
+    const data = await buildService(c).updateSchema(c.req.param('name'), parsed.data as never);
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
-});
-  const data = await buildService(c).getCompiled(c.req.param('name'));
-  if (!data) {
-    return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Collection not found.' }] }, 404);
-  }
-  return c.json({ data });
 });
