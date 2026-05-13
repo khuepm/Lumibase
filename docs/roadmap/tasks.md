@@ -41,15 +41,15 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 - [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
 - [x] `[SDK]` Type-safe client cho schema.
 - [x] `[BE]` Script CLI `apps/cms/scripts/typegen.ts` + alias `lumibase typegen`.
-- [ ] `[FE]` Module *Settings → Data Model* (list collection).
-- [ ] `[FE]` Collection wizard 3 bước.
-- [ ] `[FE]` Collection detail tabs (Fields, Display, Archive, Raw JSON).
-- [ ] `[FE]` Field inspector cơ bản (chỉ interfaces `input`, `input-multiline`, `toggle`, `select-dropdown`, `datetime`, `json-raw`).
-- [ ] `[FE]` Live JSON pane (Monaco) cho schema collection, two-way sync.
-- [ ] `[FE]` Drag-drop reorder field (dnd-kit).
+- [x] `[FE]` Module *Settings → Data Model* (list collection).
+- [x] `[FE]` Collection wizard 3 bước.
+- [x] `[FE]` Collection detail tabs (Fields, Display, Archive, Raw JSON).
+- [x] `[FE]` Field inspector cơ bản (chỉ interfaces `input`, `input-multiline`, `toggle`, `select-dropdown`, `datetime`, `json-raw`).
+- [x] `[FE]` Live JSON pane (Monaco) cho schema collection, two-way sync.
+- [x] `[FE]` Drag-drop reorder field (dnd-kit).
 - [x] `[BE]` Endpoint `GET /typegen/schema` (manifest đã apply permission). Xem `features/typegen.md`.
 - [x] `[SDK]` Generator core `packages/sdk/src/typegen/` (manifest → TS string).
-- [ ] `[FE]` Trang *Settings → Developer → Types* (preview + download).
+- [x] `[FE]` Trang *Settings → Developer → Types* (preview + download).
 - [ ] `[DOC]` Capture screenshot vào `docs/features/collections-builder.md`.
 
 ---
