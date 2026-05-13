@@ -12,7 +12,9 @@
   },
   "scripts": {
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
+    "migrate": "tsx scripts/migrate.ts",
+    "migrate:remote": "tsx scripts/migrate.ts",
+    "migrate:kit": "drizzle-kit migrate",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^22.7.4",
     "drizzle-kit": "^0.28.1",
+    "tsx": "^4.19.1",
     "typescript": "^5.6.2"
   }
 }

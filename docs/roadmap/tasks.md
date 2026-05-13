@@ -12,17 +12,17 @@ Quy ước:
 
 Mục tiêu: bộ khung monorepo chạy được, schema lõi, auth Logto, CI.
 
-- [ ] `[OPS]` Tạo `apps/cms` (Hono + Cloudflare Workers template + wrangler config).
-- [ ] `[OPS]` Tạo `apps/studio` (Vite + React + TS + Tailwind + shadcn init).
-- [ ] `[OPS]` Tạo `packages/shared`, `packages/sdk`, `packages/ui`, `packages/extension-sdk` (boilerplate + tsconfig + lint).
-- [ ] `[DB]` Bổ sung schema: `users` (mở rộng), `user_sites`, `teams`, `team_members`, `roles`, `policies`, `role_policies`, `user_policies`, `permissions` (xem `data-model.md`).
-- [ ] `[DB]` Drizzle migration runner cho Hyperdrive (local + remote scripts).
-- [ ] `[BE]` Middleware `withAuth` (Logto JWKS), `withTenant` (`site_id` từ subdomain/header), `withLogger`.
-- [ ] `[BE]` `GET /auth/me` + `GET /utils/health`.
-- [ ] `[FE]` App shell + module bar + routing skeleton + Logto login flow.
-- [ ] `[FE]` API client trong `packages/sdk` (fetch wrapper, error format, site header).
-- [ ] `[OPS]` Pipeline CI (lint, typecheck, test, build) + preview deploy.
-- [ ] `[DOC]` Cập nhật `architecture.md` (root) khi cấu trúc thay đổi.
+- [x] `[OPS]` Tạo `apps/cms` (Hono + Cloudflare Workers template + wrangler config).
+- [x] `[OPS]` Tạo `apps/studio` (Vite + React + TS + Tailwind + shadcn init).
+- [x] `[OPS]` Tạo `packages/shared`, `packages/sdk`, `packages/ui`, `packages/extension-sdk` (boilerplate + tsconfig + lint).
+- [x] `[DB]` Bổ sung schema: `users` (mở rộng), `user_sites`, `teams`, `team_members`, `roles`, `policies`, `role_policies`, `user_policies`, `permissions` (xem `data-model.md`).
+- [x] `[DB]` Drizzle migration runner cho Hyperdrive (local + remote scripts).
+- [x] `[BE]` Middleware `withAuth` (Logto JWKS), `withTenant` (`site_id` từ subdomain/header), `withLogger`.
+- [x] `[BE]` `GET /auth/me` + `GET /utils/health`.
+- [x] `[FE]` App shell + module bar + routing skeleton + Logto login flow.
+- [x] `[FE]` API client trong `packages/sdk` (fetch wrapper, error format, site header).
+- [x] `[OPS]` Pipeline CI (lint, typecheck, test, build) + preview deploy.
+- [x] `[DOC]` Cập nhật `architecture.md` (root) khi cấu trúc thay đổi.
 
 Definition of done Phase 0:
 - Login Logto → Studio shell hiển thị site switcher → gọi `/auth/me` OK.
