@@ -1,0 +1,134 @@
+import {
+  boolean,
+  index,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
+import { nanoid } from 'nanoid';
+
+/**
+ * Tenancy + identity tables. Every domain table elsewhere references
+ * `sites.id` (Strict Rule #2: multi-tenancy). Membership lives in
+ * `user_sites` so a single Logto identity can belong to many sites.
+ */
+
+const id = () => text('id').$defaultFn(() => nanoid()).primaryKey();
+const createdAt = () => timestamp('created_at').defaultNow().notNull();
+const updatedAt = () => timestamp('updated_at').defaultNow().notNull();
+
+export const sites = pgTable('sites', {
+  id: id(),
+  name: text('name').notNull(),
+  domain: text('domain').unique(),
+  createdAt: createdAt(),
+});
+
+export const users = pgTable(
+  'users',
+  {
+    id: id(),
+    logtoId: text('logto_id').notNull(),
+    email: text('email').notNull(),
+    firstName: text('first_name'),
+    lastName: text('last_name'),
+    avatar: text('avatar'),
+    /** `active` | `invited` | `suspended` */
+    status: text('status').default('active').notNull(),
+    /** `{ language, theme, timezone, defaultPresets }` */
+    preferences: jsonb('preferences').default({}).notNull(),
+    /** TFA registration metadata (delegated to Logto). */
+    tfa: jsonb('tfa').default({}).notNull(),
+    lastSeenAt: timestamp('last_seen_at'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => ({
+    logtoIdUnique: uniqueIndex('users_logto_id_unique').on(t.logtoId),
+  }),
+);
+
+export const userSites = pgTable(
+  'user_sites',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    siteId: text('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    /** Primary role inside this site. Detailed policies live in `user_policies`. */
+    roleId: text('role_id'),
+    joinedAt: createdAt(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.siteId] }),
+    siteIdx: index('user_sites_site_idx').on(t.siteId),
+  }),
+);
+
+export const teams = pgTable(
+  'teams',
+  {
+    id: id(),
+    siteId: text('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description'),
+    createdAt: createdAt(),
+  },
+  (t) => ({
+    siteIdx: index('teams_site_idx').on(t.siteId),
+  }),
+);
+
+export const teamMembers = pgTable(
+  'team_members',
+  {
+    teamId: text('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    addedAt: createdAt(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.teamId, t.userId] }),
+  }),
+);
+
+/**
+ * Notifications inbox per user. Realtime fan-out lives in Durable Objects;
+ * this table persists durable items (mentions, denial reasons, etc.).
+ */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: id(),
+    siteId: text('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    recipient: text('recipient')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sender: text('sender').references(() => users.id),
+    subject: text('subject').notNull(),
+    message: text('message'),
+    collection: text('collection'),
+    item: text('item'),
+    /** `unread` | `read` | `archived` */
+    status: text('status').default('unread').notNull(),
+    /** Whether the user already received this via WS in the current session. */
+    pushed: boolean('pushed').default(false).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => ({
+    recipientIdx: index('notifications_recipient_idx').on(t.recipient, t.status),
+    siteIdx: index('notifications_site_idx').on(t.siteId),
+  }),
+);
