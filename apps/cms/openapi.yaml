@@ -1,0 +1,121 @@
+openapi: 3.1.0
+info:
+  title: LumiBase CMS API
+  version: 0.1.0
+  description: |
+    Edge-native Headless CMS API. See `docs/api/hono-api-spec.md` for the full
+    surface; this file is the machine-readable contract that ships with the
+    repo. Endpoints land incrementally — Phase 0 covers auth/health only.
+
+servers:
+  - url: https://api.lumibase.dev/api/v1
+    description: Production
+  - url: http://127.0.0.1:8787/api/v1
+    description: Local wrangler dev
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    SiteHeader:
+      name: X-Lumi-Site
+      in: header
+      required: true
+      schema: { type: string }
+      description: Active tenant id. Required for every authenticated endpoint.
+  schemas:
+    Error:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required: [code, message]
+            properties:
+              code: { type: string }
+              message: { type: string }
+              path:
+                type: array
+                items: { type: string }
+              trace: { type: object, additionalProperties: true }
+    AuthMe:
+      type: object
+      properties:
+        data:
+          type: object
+          required: [logtoId, siteId, roles]
+          properties:
+            logtoId: { type: string }
+            email: { type: string, format: email, nullable: true }
+            roles:
+              type: array
+              items: { type: string }
+            siteId: { type: string }
+            permissions:
+              nullable: true
+              description: Computed permission matrix. Populated in Phase C.
+              type: object
+              additionalProperties: true
+    Health:
+      type: object
+      properties:
+        status: { type: string, enum: [ok] }
+        env: { type: string }
+        ts: { type: string, format: date-time }
+    Version:
+      type: object
+      properties:
+        name: { type: string }
+        version: { type: string }
+        apiVersion: { type: integer }
+        env: { type: string }
+
+paths:
+  /utils/health:
+    get:
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+  /utils/version:
+    get:
+      summary: API + runtime version
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Version' }
+  /auth/me:
+    get:
+      summary: Current authenticated principal for active site
+      parameters:
+        - $ref: '#/components/parameters/SiteHeader'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthMe' }
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '400':
+          description: Missing tenant header
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
