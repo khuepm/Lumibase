@@ -22,3 +22,9 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 LUMIBASE_ENV = "development"
+# Set to "true" only in local dev. Accepts `Bearer dev:<logtoId>` tokens
+# and `?site=<id>` query for tenant resolution.
+LUMIBASE_DEV_AUTH = "true"
+# Logto OIDC. Override per environment.
+LOGTO_ISSUER = ""
+LOGTO_AUDIENCE = ""

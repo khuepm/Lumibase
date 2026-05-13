@@ -18,7 +18,9 @@
     "@lumibase/database": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.5",
-    "nanoid": "^5.0.7"
+    "jose": "^5.9.6",
+    "nanoid": "^5.0.7",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241011.0",
