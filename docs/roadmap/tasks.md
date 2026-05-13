@@ -58,13 +58,13 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 
 Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 
-- [ ] `[DB]` Bảng `items`, `revisions`, `activity` + indexes GIN.
-- [ ] `[BE]` `ItemService` build query Drizzle động (fields, filter, sort, paginate, deep).
-- [ ] `[BE]` Endpoints `/items/:collection` đầy đủ (list, detail, create, patch, put, delete, bulk, raw).
-- [ ] `[BE]` Revision write + revert.
-- [ ] `[BE]` Activity log middleware cho mutation.
-- [ ] `[BE]` Validation pipeline (Zod + JSONata) chạy server-side.
-- [ ] `[BE]` Conditions evaluator (server + helper xuất sang client).
+- [x] `[DB]` Bảng `items`, `revisions`, `activity` + indexes GIN.
+- [x] `[BE]` `ItemService` build query Drizzle động (fields, filter, sort, paginate, deep).
+- [x] `[BE]` Endpoints `/items/:collection` đầy đủ (list, detail, create, patch, put, delete, bulk, raw).
+- [x] `[BE]` Revision write + revert.
+- [x] `[BE]` Activity log middleware cho mutation.
+- [x] `[BE]` Validation pipeline (Zod + JSONata) chạy server-side.
+- [x] `[BE]` Conditions evaluator (server + helper xuất sang client).
 - [ ] `[BE]` Per-field encryption service (AES-GCM, key Workers Secret).
 - [ ] `[FE]` Content module list view (tabular layout) + filter builder + sort + paginate.
 - [ ] `[FE]` Detail editor + tabs side panel (Revisions, Raw JSON).
@@ -74,7 +74,7 @@ Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 - [ ] `[FE]` Bulk raw editor cho toàn item.
 - [ ] `[FE]` Revisions diff viewer.
 - [ ] `[FE]` Mustache display template editor (textarea + autocomplete + live preview).
-- [ ] `[BE]` `POST /utils/render-template` (mustache only Phase B).
+- [x] `[BE]` `POST /utils/render-template` (mustache only Phase B).
 - [ ] `[DOC]` Cập nhật `features/field-types-and-config.md` với danh sách interfaces đã implement.
 
 ---
