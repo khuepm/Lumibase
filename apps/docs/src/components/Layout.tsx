@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { docTree } from 'virtual:docs-registry';
 import { Sidebar } from './Sidebar';
+import { TableOfContents } from './TableOfContents';
 
 /**
  * App layout shell with three-column responsive structure.
@@ -15,6 +16,7 @@ import { Sidebar } from './Sidebar';
  */
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const contentRef = useRef<HTMLElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,16 +92,15 @@ export function Layout() {
         {/* Content + ToC wrapper */}
         <div className="flex flex-1 overflow-hidden">
           {/* Center column — page content */}
-          <main className="flex-1 overflow-y-auto">
+          <main ref={contentRef} className="flex-1 overflow-y-auto">
             <Outlet />
           </main>
 
           {/* Right column — Table of Contents (visible only >1024px) */}
           <aside className="hidden w-56 shrink-0 overflow-y-auto border-l p-4 lg:block">
-            {/* ToC placeholder — will be replaced by TableOfContents component in task 8.1 */}
-            <p className="text-sm text-muted-foreground">
-              Table of Contents will appear here.
-            </p>
+            <div className="sticky top-4">
+              <TableOfContents contentRef={contentRef} />
+            </div>
           </aside>
         </div>
       </div>
