@@ -59,6 +59,7 @@ const buildService = (c: Context<AppEnv>) => {
       ip: c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null,
       headers,
     },
+    encryptionKey: c.env.ENCRYPTION_KEY,
   });
 };
 

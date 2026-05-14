@@ -12,6 +12,7 @@ import { validateItem } from './validation';
 import type { KVNamespace } from '@cloudflare/workers-types';
 import { PermissionService, type PermissionAction } from './permission-service';
 import type { MagicContext } from './permission-dsl';
+import { CryptoService } from './crypto-service';
 
 /**
  * ItemService — generic CRUD over the `items` JSONB store, driven by the
@@ -85,6 +86,8 @@ export interface ItemServiceDeps {
   userId?: string | null;
   /** Optional MagicContext to enable permission filtering (Phase C). */
   permissionCtx?: MagicContext;
+  /** Optional base64 AES-GCM key for field encryption. */
+  encryptionKey?: string;
 }
 
 const STRUCTURAL_FIELDS = new Set([
@@ -205,6 +208,7 @@ function buildSort(sort?: string[]): SQL[] {
 export class ItemService {
   private readonly schemaService: SchemaService;
   private readonly permissions: PermissionService | null;
+  private readonly cryptoService: CryptoService | null;
   constructor(private readonly deps: ItemServiceDeps) {
     this.schemaService = new SchemaService({
       db: deps.db,
@@ -214,6 +218,7 @@ export class ItemService {
     this.permissions = deps.permissionCtx
       ? new PermissionService({ db: deps.db, cache: deps.cache, ctx: deps.permissionCtx })
       : null;
+    this.cryptoService = deps.encryptionKey ? new CryptoService(deps.encryptionKey) : null;
   }
 
   /** Resolve permission for the active principal; returns null when denied. */
@@ -273,8 +278,14 @@ export class ItemService {
       ? rows.map((r) => this.permissions!.maskItem(perm, r as ItemRow, knownFields))
       : rows;
 
+    const data = [];
+    for (const r of masked) {
+      r.data = await this.processCrypto(collectionName, r.data as Record<string, unknown>, 'decrypt', false);
+      data.push(params.fields ? projectFields(r as ItemRow, params.fields) : r);
+    }
+
     return {
-      data: params.fields ? masked.map((r) => projectFields(r as ItemRow, params.fields!)) : masked,
+      data,
       meta: { total, limit, offset },
     };
   }
@@ -299,6 +310,7 @@ export class ItemService {
     if (!row) throw new ItemServiceError('NOT_FOUND', `Item "${id}" not found.`, 404);
     const knownFields = (await this.schemaService.getCompiled(collectionName))?.fields.map((f) => f.name) ?? [];
     const masked = perm && this.permissions ? this.permissions.maskItem(perm, row as ItemRow, knownFields) : row;
+    masked.data = await this.processCrypto(collectionName, masked.data as Record<string, unknown>, 'decrypt', false);
     return fields ? projectFields(masked as ItemRow, fields) : masked;
   }
 
@@ -310,12 +322,13 @@ export class ItemService {
       throw new ItemServiceError('FORBIDDEN', 'Item violates create rule.', 403);
     }
     const data = await this.runValidation(collectionName, withPresets, false);
+    const encryptedData = await this.processCrypto(collectionName, data, 'encrypt', true);
     const [row] = await this.deps.db
       .insert(items)
       .values({
         siteId: this.deps.siteId,
         collectionId: coll.id,
-        data,
+        data: encryptedData,
         status: payload.status ?? 'draft',
         sort: payload.sort ?? 0,
         userCreated: this.deps.userId ?? null,
@@ -323,37 +336,46 @@ export class ItemService {
       })
       .returning();
     if (!row) throw new ItemServiceError('CREATE_FAILED', 'Failed to insert item.');
-    await this.writeRevision(coll.id, row.id, payload.data ?? {}, null);
+    await this.writeRevision(coll.id, row.id, encryptedData, null);
     await this.writeActivity('create', coll.name, row.id, { data: payload.data });
+    row.data = await this.processCrypto(collectionName, row.data as Record<string, unknown>, 'decrypt', false);
     return row;
   }
 
   async patch(collectionName: string, id: string, patch: Partial<{ data: Record<string, unknown>; status: string; sort: number }>) {
     const coll = await this.resolveCollection(collectionName);
-    const current = (await this.detail(collectionName, id)) as ItemRow;
+    
+    const [rawRow] = await this.deps.db.select().from(items).where(and(eq(items.id, id), eq(items.collectionId, coll.id))).limit(1);
+    if (!rawRow) throw new ItemServiceError('NOT_FOUND', `Item "${id}" not found.`, 404);
 
-    const merged: ItemRow['data'] = patch.data
-      ? { ...(current.data as Record<string, unknown>), ...patch.data }
-      : current.data;
+    const currentData = await this.processCrypto(collectionName, rawRow.data as Record<string, unknown>, 'decrypt', true);
+
+    const merged: Record<string, unknown> = patch.data
+      ? { ...currentData, ...patch.data }
+      : currentData;
 
     if (patch.data) {
       await this.runValidation(collectionName, patch.data, true);
     }
 
+    const encryptedMerged = await this.processCrypto(collectionName, merged, 'encrypt', true);
+
     const [row] = await this.deps.db
       .update(items)
       .set({
-        data: merged,
-        status: patch.status ?? current.status,
-        sort: patch.sort ?? current.sort,
+        data: encryptedMerged,
+        status: patch.status ?? rawRow.status,
+        sort: patch.sort ?? rawRow.sort,
         userUpdated: this.deps.userId ?? null,
         updatedAt: new Date(),
       })
       .where(eq(items.id, id))
       .returning();
 
-    await this.writeRevision(coll.id, id, merged, current.data as Record<string, unknown>);
+    await this.writeRevision(coll.id, id, encryptedMerged, rawRow.data as Record<string, unknown>);
     await this.writeActivity('update', coll.name, id, { patch });
+    
+    row.data = await this.processCrypto(collectionName, row.data as Record<string, unknown>, 'decrypt', false);
     return row;
   }
 
@@ -449,6 +471,47 @@ export class ItemService {
   }
 
   // ---------- internals ----------
+
+  private async processCrypto(
+    collectionName: string,
+    data: Record<string, unknown>,
+    mode: 'encrypt' | 'decrypt',
+    internal = false,
+  ): Promise<Record<string, unknown>> {
+    if (!this.cryptoService) return data;
+    if (!data) return data;
+    const compiled = await this.schemaService.getCompiled(collectionName);
+    if (!compiled) return data;
+    
+    const encryptedFields = compiled.fields.filter((f) => f.encrypted).map((f) => f.name);
+    if (encryptedFields.length === 0) return data;
+
+    let canDecrypt = internal;
+    if (mode === 'decrypt' && !internal) {
+      try {
+        const perm = await this.perm(collectionName, 'read_decrypted');
+        canDecrypt = !!perm;
+      } catch (e) {
+        canDecrypt = false;
+      }
+    }
+
+    const out = { ...data };
+    for (const f of encryptedFields) {
+      if (out[f] !== undefined && out[f] !== null) {
+        if (mode === 'encrypt') {
+          out[f] = await this.cryptoService.encrypt(out[f]);
+        } else if (mode === 'decrypt') {
+          if (canDecrypt) {
+            out[f] = await this.cryptoService.decrypt(out[f] as string);
+          } else {
+            out[f] = '***';
+          }
+        }
+      }
+    }
+    return out;
+  }
 
   private async writeRevision(
     collectionId: string,
