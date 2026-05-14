@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'virtual:docs-registry': path.resolve(__dirname, './src/test/__mocks__/virtual-docs-registry.ts'),
     },
   },
   test: {

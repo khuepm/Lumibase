@@ -123,7 +123,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random links (relative .md to known slugs, absolute URLs, relative to unknown slugs), verify correct href rewriting and attributes
     - **Validates: Requirements 8.1, 8.3, 8.4**
 
-- [-] 7. Implement the DocPage and metadata display
+- [x] 7. Implement the DocPage and metadata display
   - [x] 7.1 Create the DocPage component
     - Create `src/pages/DocPage.tsx`
     - Load doc content from `docIndex` based on route slug parameter
@@ -134,12 +134,12 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - If slug not found in `docIndex`, redirect to NotFoundPage
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 5.2_
 
-  - [~] 7.2 Write property test for browser title formatting (Property 7)
+  - [x] 7.2 Write property test for browser title formatting (Property 7)
     - **Property 7: Browser title formatting**
     - Generate random title strings, verify browser title is `{title} — Lumibase Docs`
     - **Validates: Requirements 9.4**
 
-  - [~] 7.3 Write property test for date formatting (Property 8)
+  - [x] 7.3 Write property test for date formatting (Property 8)
     - **Property 8: Date formatting**
     - Generate random valid ISO date strings, verify displayed format is `DD/MM/YYYY`
     - **Validates: Requirements 9.5**
