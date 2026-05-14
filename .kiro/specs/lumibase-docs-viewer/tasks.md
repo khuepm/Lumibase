@@ -76,7 +76,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Display "404 — Document Not Found" message with a link back to `/docs/README`
     - _Requirements: 5.4_
 
-- [-] 5. Implement the Sidebar component
+- [x] 5. Implement the Sidebar component
   - [x] 5.1 Build the recursive tree Sidebar component
     - Create `src/components/Sidebar.tsx` and `src/components/SidebarNode.tsx`
     - Render `DocTree` as a collapsible tree: directories as collapsible groups, files as clickable links
@@ -84,19 +84,19 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Use React Router's `useNavigate` for client-side navigation (no full page reload)
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ] 5.2 Add localStorage persistence for sidebar state
+  - [x] 5.2 Add localStorage persistence for sidebar state
     - Persist expanded/collapsed state per directory in `localStorage` under key `lumibase-docs:sidebar-state`
     - Restore state on page load; default to all expanded if localStorage unavailable
     - Gracefully handle private browsing / storage errors
     - _Requirements: 3.5_
 
-  - [ ] 5.3 Implement mobile responsive sidebar toggle
+  - [x] 5.3 Implement mobile responsive sidebar toggle
     - Add hamburger menu button visible on screens <768px
     - Toggle sidebar visibility with overlay on mobile
     - _Requirements: 3.6_
 
 - [~] 6. Implement the Markdown Renderer
-  - [ ] 6.1 Create the MarkdownRenderer component with plugin pipeline
+  - [~] 6.1 Create the MarkdownRenderer component with plugin pipeline
     - Create `src/components/MarkdownRenderer.tsx`
     - Configure `react-markdown` with plugins: `remark-gfm`, `rehype-slug`, `rehype-shiki`
     - Configure Shiki with languages: `typescript`, `javascript`, `json`, `yaml`, `sql`, `bash`, `markdown`
@@ -105,7 +105,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Code blocks without language → plain monospace, no highlighting
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [ ] 6.2 Implement the Link Rewriter component
+  - [~] 6.2 Implement the Link Rewriter component
     - Create custom `<a>` component override for `react-markdown`
     - Relative `.md` links → rewrite href to `/docs/{slug}`, use React Router navigate (no page reload)
     - Absolute URLs (`http://`, `https://`) → `target="_blank"` + `rel="noopener noreferrer"`
@@ -113,18 +113,18 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Accept `currentSlug` and `knownSlugs` props for resolution
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-  - [ ] 6.3 Write property test for front matter stripping (Property 3)
+  - [~] 6.3 Write property test for front matter stripping (Property 3)
     - **Property 3: Front matter stripping**
     - Generate random YAML front matter content, verify rendered output contains no front matter delimiters or raw YAML
     - **Validates: Requirements 4.7**
 
-  - [ ] 6.4 Write property test for link classification and rewriting (Property 6)
+  - [~] 6.4 Write property test for link classification and rewriting (Property 6)
     - **Property 6: Link classification and rewriting**
     - Generate random links (relative .md to known slugs, absolute URLs, relative to unknown slugs), verify correct href rewriting and attributes
     - **Validates: Requirements 8.1, 8.3, 8.4**
 
 - [~] 7. Implement the DocPage and metadata display
-  - [ ] 7.1 Create the DocPage component
+  - [~] 7.1 Create the DocPage component
     - Create `src/pages/DocPage.tsx`
     - Load doc content from `docIndex` based on route slug parameter
     - Pass content to `MarkdownRenderer`
@@ -134,18 +134,18 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - If slug not found in `docIndex`, redirect to NotFoundPage
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 5.2_
 
-  - [ ] 7.2 Write property test for browser title formatting (Property 7)
+  - [~] 7.2 Write property test for browser title formatting (Property 7)
     - **Property 7: Browser title formatting**
     - Generate random title strings, verify browser title is `{title} — Lumibase Docs`
     - **Validates: Requirements 9.4**
 
-  - [ ] 7.3 Write property test for date formatting (Property 8)
+  - [~] 7.3 Write property test for date formatting (Property 8)
     - **Property 8: Date formatting**
     - Generate random valid ISO date strings, verify displayed format is `DD/MM/YYYY`
     - **Validates: Requirements 9.5**
 
 - [~] 8. Implement the Table of Contents
-  - [ ] 8.1 Create the ToC Generator component
+  - [~] 8.1 Create the ToC Generator component
     - Create `src/components/TableOfContents.tsx`
     - Extract H2 and H3 headings from rendered content using heading IDs (from `rehype-slug`)
     - Render as sticky panel on right side (screens >1024px)
@@ -154,7 +154,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Hide ToC when fewer than 2 H2/H3 headings exist
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 8.2 Write property test for ToC heading extraction (Property 4)
+  - [~] 8.2 Write property test for ToC heading extraction (Property 4)
     - **Property 4: ToC heading extraction**
     - Generate random markdown with various heading levels, verify ToC contains exactly H2 and H3 headings in order, and is not rendered when fewer than 2 exist
     - **Validates: Requirements 6.1, 6.5**
@@ -163,7 +163,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
   - Ensure all tests pass, ask the user if questions arise.
 
 - [~] 10. Implement the Search Engine
-  - [ ] 10.1 Create the search indexing and query service
+  - [~] 10.1 Create the search indexing and query service
     - Create `src/lib/search.ts`
     - Initialize MiniSearch with fields: `title` (boost: 2), `content` (boost: 1); stored fields: `title`, `slug`
     - Enable prefix search and fuzzy matching (distance 1)
@@ -173,7 +173,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Return results within 300ms for queries of at least 2 characters
     - _Requirements: 7.1, 7.2, 7.3, 7.5_
 
-  - [ ] 10.2 Create the SearchDialog component
+  - [~] 10.2 Create the SearchDialog component
     - Create `src/components/SearchDialog.tsx`
     - Render search input with keyboard shortcut (Cmd/Ctrl+K) to open
     - Display results as a list with title and highlighted snippet
@@ -181,13 +181,13 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Hide results panel when input is cleared, return focus to input
     - _Requirements: 7.2, 7.3, 7.4, 7.6_
 
-  - [ ] 10.3 Write property test for search relevance and highlighting (Property 5)
+  - [~] 10.3 Write property test for search relevance and highlighting (Property 5)
     - **Property 5: Search returns relevant results with highlighted terms**
     - Generate random document sets and queries (≥2 chars), verify matching documents are returned and snippets contain matched terms
     - **Validates: Requirements 7.2, 7.3**
 
 - [ ] 11. Integration and final wiring
-  - [ ] 11.1 Wire all components together in the app shell
+  - [~] 11.1 Wire all components together in the app shell
     - Connect Sidebar, DocPage, ToC, and SearchDialog in the Layout component
     - Ensure navigation from Sidebar, Search, and internal links all use React Router (no full page reload)
     - Verify `/` redirects to `/docs/README`
@@ -195,14 +195,14 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Register the `vite-plugin-docs-loader` in `vite.config.ts`
     - _Requirements: 1.1, 3.2, 5.1, 5.3, 5.4, 7.4, 8.2_
 
-  - [ ] 11.2 Write integration tests for end-to-end flows
+  - [~] 11.2 Write integration tests for end-to-end flows
     - Test full app render with test markdown files
     - Test sidebar navigation triggers correct page loads
     - Test search indexes documents and returns results
     - Test internal link navigation works without page reload
     - _Requirements: 3.2, 5.2, 7.4, 8.2_
 
-- [ ] 12. Final checkpoint - Ensure all tests pass
+- [~] 12. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
