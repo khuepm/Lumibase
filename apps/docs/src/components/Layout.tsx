@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { docTree } from 'virtual:docs-registry';
+import { Sidebar } from './Sidebar';
 
 /**
  * App layout shell with three-column responsive structure.
@@ -13,6 +15,20 @@ import { Menu, X } from 'lucide-react';
  */
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Extract the active slug from the current route path
+  // Route pattern is /docs/:slug* so we strip the /docs/ prefix
+  const activeSlug = location.pathname.startsWith('/docs/')
+    ? location.pathname.slice('/docs/'.length)
+    : '';
+
+  const handleNavigate = (slug: string) => {
+    navigate(`/docs/${slug}`);
+    // Close sidebar on mobile after navigation
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="relative flex h-screen w-screen overflow-hidden">
@@ -46,12 +62,14 @@ export function Layout() {
           </button>
         </div>
 
-        {/* Sidebar content placeholder — will be replaced by Sidebar component in task 5.1 */}
-        <nav className="overflow-y-auto p-4">
-          <p className="text-sm text-muted-foreground">
-            Sidebar navigation will appear here.
-          </p>
-        </nav>
+        {/* Sidebar navigation tree */}
+        <div className="overflow-y-auto h-full">
+          <Sidebar
+            tree={docTree}
+            activeSlug={activeSlug}
+            onNavigate={handleNavigate}
+          />
+        </div>
       </aside>
 
       {/* Main content area */}

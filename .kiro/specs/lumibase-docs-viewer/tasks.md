@@ -76,8 +76,8 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Display "404 — Document Not Found" message with a link back to `/docs/README`
     - _Requirements: 5.4_
 
-- [~] 5. Implement the Sidebar component
-  - [ ] 5.1 Build the recursive tree Sidebar component
+- [-] 5. Implement the Sidebar component
+  - [x] 5.1 Build the recursive tree Sidebar component
     - Create `src/components/Sidebar.tsx` and `src/components/SidebarNode.tsx`
     - Render `DocTree` as a collapsible tree: directories as collapsible groups, files as clickable links
     - Highlight the active doc based on current route slug
