@@ -1,6 +1,33 @@
-# Lumibase 
+# LumiBase
 
-Lumibase is an Edge-native Headless CMS built for high-performance multi-website deployments, resolving the scalability and CI/CD bottlenecks of traditional monolithic CMS platforms.
+<div align="center">
+
+**⚡ Edge-Native Headless CMS for Modern Web Development**
+
+[![GitHub Stars](https://img.shields.io/github/stars/khuepm/lumibase?style=social)](https://github.com/khuepm/lumibase)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/khuepm)](https://github.com/sponsors/khuepm)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/khuepm/lumibase/blob/main/LICENSE)
+
+**Sponsor us to get exclusive AI Skills documentation for building production-ready applications and practical marketing strategies!** 🎯
+
+[🚀 Sponsor on GitHub](https://github.com/sponsors/khuepm) • [📖 Documentation](https://docs.lumibase.dev) • [💬 Community](https://github.com/khuepm/lumibase/discussions)
+
+</div>
+
+---
+
+## 🎯 What is LumiBase?
+
+LumiBase is an Edge-native Headless CMS built for high-performance multi-website deployments, resolving the scalability and CI/CD bottlenecks of traditional monolithic CMS platforms. Inspired by Directus but designed for the edge computing era.
+
+### ✨ Key Features
+
+- **Edge-First Architecture:** Runs entirely on Cloudflare Workers & Hyperdrive for sub-millisecond response times globally
+- **True Multi-Tenancy:** Hard-coded `site_id` isolation for complete data separation
+- **Page Hydration API:** Delivers layout and data in a single payload for optimal performance
+- **GitOps Ready:** Export/import configurations for roles and schemas
+- **Privacy-First:** Per-field encryption with AES-GCM for sensitive data
+- **Developer Experience:** Type-safe SDKs, comprehensive documentation, and modern tooling
 
 ## Folder Structure (Turborepo)
 
@@ -32,6 +59,48 @@ pnpm --filter @lumibase/studio dev   # Studio SPA on :5173
 
 The Studio placeholder dashboard pings `/api/v1/utils/health` to verify the wire-up. Full documentation lives in [`docs/`](./docs/README.md); the task roadmap is in [`docs/roadmap/tasks.md`](./docs/roadmap/tasks.md).
 
+---
+
+## 🎁 Sponsorship Benefits
+
+Support LumiBase development and get **exclusive AI Skills documentation** to accelerate your application development and marketing success!
+
+### 🚀 Hobby Tier - $29/month
+
+**Perfect for developers who want to build production-ready applications faster.**
+
+**📚 Exclusive AI Skills Documentation:**
+- **Database & Migration Architect**: Master schema design with NanoID/UUIDv7, multi-tenancy patterns, and GitOps configuration management
+- **Edge & Caching Specialist**: Learn Cloudflare optimization, cache tagging strategies, and file security best practices
+- **Unified Data Hydration Logic**: Build single-roundtrip APIs that deliver complete page data for optimal SEO
+- **UI/UX Component Bridge**: Master TailwindCSS integration with CVA patterns and dynamic content rendering
+
+**🎯 Practical Marketing Strategies:**
+- **Product Launch Playbooks**: Step-by-step guides for launching developer tools and SaaS products
+- **Community Building Frameworks**: Strategies to grow and engage your developer community
+- **Content Marketing Templates**: Ready-to-use templates for technical blog posts, tutorials, and case studies
+- **Growth Hacking Techniques**: Proven methods to acquire users and drive adoption for your products
+
+**✨ Additional Perks:**
+- Priority email support
+- Early access to new features
+- GitHub Sponsors badge
+- Vote on feature roadmap
+- Custom integrations assistance
+
+### 💎 Enterprise Tier - $99/month
+
+**For teams building mission-critical applications.**
+
+Includes everything in Hobby tier plus:
+- Dedicated support channel with SLA guarantees
+- Custom SSO integration (SAML, LDAP)
+- On-premise deployment support
+- Training & onboarding sessions
+- Custom contracts and invoicing
+
+[🎯 Become a Sponsor](https://github.com/sponsors/khuepm) and unlock these exclusive resources!
+
 ## Core Features
 
 1. **Edge-First:** Runs entirely on Cloudflare Workers & Hyperdrive.
@@ -39,78 +108,38 @@ The Studio placeholder dashboard pings `/api/v1/utils/health` to verify the wire
 3. **Page Hydration API:** Delivers layout and data in a single payload.
 4. **GitOps Ready:** `cms config:export` for roles and schemas.
 
-# Dưới đây là bộ tài liệu cấu trúc sẵn để bạn cung cấp cho AI, giúp nó hiểu sâu sắc và bắt đầu xây dựng Lumibase cho bạn.
+---
+
+## 📚 AI Skills Documentation
+
+For detailed AI-assisted development guidance, including database architecture patterns, edge optimization strategies, and UI/UX integration patterns, see [`docs/ai-skills.md`](./docs/ai-skills.md). This comprehensive guide provides the prompts and patterns used to accelerate LumiBase development with AI assistance.
 
 ---
 
-## 1. Project Blueprint: Lumibase Core Identity
+## 🤝 Contributing
 
-**Mục tiêu:** Giúp AI hiểu bản chất và tầm nhìn của dự án.
-
-* **Tên dự án:** Lumibase.
-* **Triết lý:** "Directus-inspired, Edge-native, Production-ready".
-* **Vấn đề giải quyết:** Khắc phục nhược điểm của Directus về Multi-tenancy, ID collision, Cache quản lý kém và khó khăn trong CI/CD.
-* **Kiến trúc lõi:** Headless CMS hỗ trợ quản lý dữ liệu động kết hợp cấu hình UI (Page-builder mindset) trả về trong 1 vòng gọi duy nhất.
+Contributions are welcome! Please read our contributing guidelines before submitting PRs.
 
 ---
 
-## 2. Technical Stack Definition (The "Hard" Skills)
+## 📄 License
 
-**Mục tiêu:** Quy định chặt chẽ các công nghệ AI được phép sử dụng.
-
-* **Runtime:** Node.js (Edge-compatible, ưu tiên Hono.js hoặc ElysiaJS).
-* **Database:** PostgreSQL (Hybrid RDBMS + JSONB).
-* **Infrastructure:** Cloudflare Stack (Workers, R2, Hyperdrive, KV).
-* **Authentication:** Logto (OIDC, Multi-tenancy).
-* **Communications:** Resend (Email), Webhooks (Event-driven).
-* **Frontend Reference:** Next.js (App Router, SSR), TailwindCSS, Shadcn UI.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 3. Bộ kỹ năng cho AI (AI Skills / System Prompts)
+## 🙏 Acknowledgments
 
-Bạn hãy copy các đoạn dưới đây vào System Prompt hoặc file `README.md` của dự án để AI luôn tuân thủ:
-
-### Skill 1: Database & Migration Architect
-
-> **Nhiệm vụ:** Thiết kế schema và cơ chế đồng bộ dữ liệu.
-> * **Quy tắc ID:** Tuyệt đối không dùng Serial/Auto-increment. Sử dụng NanoID (ngắn, URL friendly) hoặc UUIDv7.
-> * **Multi-tenancy:** Mọi bảng phải có `site_id` để phân tách dữ liệu tuyệt đối ở tầng Row-Level.
-> * **Config-as-Code:** Xây dựng module xuất/nhập cấu hình (Roles, Permissions, Collections) ra file YAML/JSON để hỗ trợ GitOps.
-> 
-> 
-
-### Skill 2: Edge & Caching Specialist
-
-> **Nhiệm vụ:** Tối ưu hóa hiệu năng trên Cloudflare.
-> * **Cache Tagging:** Implement cơ chế xóa cache theo Tag trong Redis/Cloudflare KV. Khi một bản ghi cập nhật, phải invalid toàn bộ các cache-key liên quan.
-> * **File Security:** Xây dựng middleware kiểm tra File Signature (Magic Numbers) trước khi upload vào Cloudflare R2, không tin tưởng vào file extension từ client.
-> 
-> 
-
-### Skill 3: Unified Data Hydration Logic
-
-> **Nhiệm vụ:** Xử lý luồng dữ liệu "1-roundtrip".
-> * **Logic:** Thiết kế API `/deliver/{page_slug}` thực hiện gộp (Aggregator) cả Page Config (từ bảng `pages`) và Data (từ các `collections` liên quan) thành một JSON duy nhất.
-> * **SEO-Ready:** Đảm bảo cấu trúc JSON trả về đủ thông tin để Next.js SSR có thể render HTML hoàn chỉnh mà không cần gọi thêm API phụ.
-> 
-> 
-
-### Skill 4: UI/UX Component Bridge
-
-> **Nhiệm vụ:** Kết nối CMS với TailwindCSS/Next.js.
-> * **Pattern:** Sử dụng Class Variance Authority (CVA) để map các "Intent" từ CMS thành class Tailwind thực tế.
-> * **Rich Content:** Sử dụng `html-react-parser` để xử lý HTML động từ CMS, đảm bảo convert thẻ `<a>` thành Next.js `<Link>` và thẻ `<img>` thành Next.js `<Image>`.
-> 
-> 
+- Inspired by [Directus](https://directus.io/)
+- Built with [Cloudflare](https://cloudflare.com/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
 
 ---
 
-## 4. Lộ trình Đóng gói (Packaging for AI)
+<div align="center">
 
-Để AI có thể thực sự bắt tay vào "code", bạn nên tổ chức thư mục dự án như sau:
+**⭐ If you find this project helpful, please consider giving it a star!**
 
-1. **`/docs/specs`**: Chứa file Markdown chi tiết về từng tính năng (Auth, File, Caching).
-2. **`/docs/prompts`**: Chứa các "Skills" nêu trên.
-3. **`/schema`**: Chứa các file SQL khởi tạo hoặc file định nghĩa Prisma/Drizzle.
-4. **`.cursorrules` (Nếu dùng Cursor):** Dán toàn bộ "Technical Stack" và "Skills" vào đây. AI sẽ tự động tuân thủ mỗi khi bạn viết code.
+Made with ❤️ by [Khuepm](https://github.com/khuepm)
+
+</div>
