@@ -427,18 +427,112 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/AuthMe' }
-        '401':
-          description: Unauthenticated
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-        '400':
-          description: Missing tenant header
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+  /items/{collection}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: collection, in: path, required: true, schema: { type: string } }
+    get:
+      summary: List items in a collection
+      parameters:
+        - { name: fields, in: query, schema: { type: string } }
+        - { name: filter, in: query, schema: { type: string }, description: 'JSON filter DSL' }
+        - { name: sort, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0 } }
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { type: object }
+                status: { type: string }
+                sort: { type: integer }
+      responses:
+        '201': { description: Created }
+  /items/{collection}/bulk:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: collection, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Bulk operation (create/update/delete) on items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [op, items]
+              properties:
+                op: { type: string, enum: [create, update, delete] }
+                items:
+                  type: array
+                  items: { type: object }
+      responses:
+        '200': { description: OK }
+  /items/{collection}/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: collection, in: path, required: true, schema: { type: string } }
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Get an item
+      responses: { '200': { description: OK } }
+    patch:
+      summary: Patch an item (merge data)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses: { '200': { description: OK } }
+    put:
+      summary: Replace item data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses: { '200': { description: OK } }
+    delete:
+      summary: Soft-delete an item
+      responses: { '204': { description: Deleted } }
+  /items/{collection}/{id}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: collection, in: path, required: true, schema: { type: string } }
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: List revisions for an item
+      responses: { '200': { description: OK } }
+  /items/{collection}/{id}/revert/{revisionId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: collection, in: path, required: true, schema: { type: string } }
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: revisionId, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Revert an item to a previous revision snapshot
+      responses: { '200': { description: OK } }
+  /utils/render-template:
+    post:
+      summary: Render a mustache-style display template against a data object
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [template, data]
+              properties:
+                template: { type: string }
+                data: { type: object }
+      responses: { '200': { description: OK } }
