@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
@@ -5,6 +6,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeShiki from '@shikijs/rehype';
 import type { Components } from 'react-markdown';
 import type { HTMLAttributes, TableHTMLAttributes } from 'react';
+import { LinkRewriter } from './LinkRewriter';
 
 /**
  * MarkdownRenderer — renders Markdown content as styled HTML using
@@ -197,16 +199,7 @@ const components: Components = {
     </em>
   ),
 
-  // Links — default styling (Link Rewriter in task 6.2 will override this)
-  a: ({ children, href, ...props }: HTMLAttributes<HTMLAnchorElement> & { href?: string }) => (
-    <a
-      href={href}
-      className="text-primary underline underline-offset-2 hover:text-primary/80"
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  // Links — handled by LinkRewriter (injected dynamically per render with slug context)
 };
 
 /**
@@ -234,15 +227,31 @@ const rehypeShikiOptions = {
 
 export function MarkdownRenderer({
   content,
-  currentSlug: _currentSlug,
-  knownSlugs: _knownSlugs,
+  currentSlug,
+  knownSlugs,
 }: MarkdownRendererProps) {
+  // Build components object with the link rewriter that has access to slug context.
+  // Memoized so react-markdown doesn't re-create component instances on every render.
+  const componentsWithLinks: Components = useMemo(
+    () => ({
+      ...components,
+      a: (props) => (
+        <LinkRewriter
+          currentSlug={currentSlug}
+          knownSlugs={knownSlugs}
+          {...props}
+        />
+      ),
+    }),
+    [currentSlug, knownSlugs],
+  );
+
   return (
     <div className="prose-docs max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkFrontmatter]}
         rehypePlugins={[rehypeSlug, [rehypeShiki, rehypeShikiOptions]]}
-        components={components}
+        components={componentsWithLinks}
       >
         {content}
       </ReactMarkdown>
