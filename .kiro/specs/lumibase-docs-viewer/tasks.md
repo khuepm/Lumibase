@@ -202,7 +202,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Test internal link navigation works without page reload
     - _Requirements: 3.2, 5.2, 7.4, 8.2_
 
-- [~] 12. Final checkpoint - Ensure all tests pass
+- [x] 12. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
