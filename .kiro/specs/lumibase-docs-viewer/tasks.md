@@ -95,8 +95,8 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Toggle sidebar visibility with overlay on mobile
     - _Requirements: 3.6_
 
-- [~] 6. Implement the Markdown Renderer
-  - [~] 6.1 Create the MarkdownRenderer component with plugin pipeline
+- [x] 6. Implement the Markdown Renderer
+  - [x] 6.1 Create the MarkdownRenderer component with plugin pipeline
     - Create `src/components/MarkdownRenderer.tsx`
     - Configure `react-markdown` with plugins: `remark-gfm`, `rehype-slug`, `rehype-shiki`
     - Configure Shiki with languages: `typescript`, `javascript`, `json`, `yaml`, `sql`, `bash`, `markdown`
@@ -105,7 +105,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Code blocks without language → plain monospace, no highlighting
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [~] 6.2 Implement the Link Rewriter component
+  - [x] 6.2 Implement the Link Rewriter component
     - Create custom `<a>` component override for `react-markdown`
     - Relative `.md` links → rewrite href to `/docs/{slug}`, use React Router navigate (no page reload)
     - Absolute URLs (`http://`, `https://`) → `target="_blank"` + `rel="noopener noreferrer"`
@@ -113,18 +113,18 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Accept `currentSlug` and `knownSlugs` props for resolution
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-  - [~] 6.3 Write property test for front matter stripping (Property 3)
+  - [x] 6.3 Write property test for front matter stripping (Property 3)
     - **Property 3: Front matter stripping**
     - Generate random YAML front matter content, verify rendered output contains no front matter delimiters or raw YAML
     - **Validates: Requirements 4.7**
 
-  - [~] 6.4 Write property test for link classification and rewriting (Property 6)
+  - [x] 6.4 Write property test for link classification and rewriting (Property 6)
     - **Property 6: Link classification and rewriting**
     - Generate random links (relative .md to known slugs, absolute URLs, relative to unknown slugs), verify correct href rewriting and attributes
     - **Validates: Requirements 8.1, 8.3, 8.4**
 
-- [~] 7. Implement the DocPage and metadata display
-  - [~] 7.1 Create the DocPage component
+- [-] 7. Implement the DocPage and metadata display
+  - [x] 7.1 Create the DocPage component
     - Create `src/pages/DocPage.tsx`
     - Load doc content from `docIndex` based on route slug parameter
     - Pass content to `MarkdownRenderer`
