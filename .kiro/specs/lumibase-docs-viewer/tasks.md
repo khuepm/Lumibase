@@ -24,7 +24,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Verify `fast-check` is importable and working with a trivial test
     - _Requirements: 1.1_
 
-- [ ] 2. Implement the Vite plugin and Doc Registry
+- [x] 2. Implement the Vite plugin and Doc Registry
   - [x] 2.1 Create `vite-plugin-docs-loader` virtual module plugin
     - Create `src/plugins/vite-plugin-docs-loader.ts`
     - Implement plugin that resolves `virtual:docs-registry` module ID
@@ -39,17 +39,17 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Export `docTree`, `docIndex`, `docList` from the virtual module
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 10.1, 10.2, 10.3_
 
-  - [ ] 2.2 Add TypeScript type declarations for the virtual module
+  - [x] 2.2 Add TypeScript type declarations for the virtual module
     - Create `src/types/virtual-docs-registry.d.ts` declaring module `virtual:docs-registry`
     - Define and export `DocEntry`, `DocNode`, `docTree`, `docIndex`, `docList` types
     - _Requirements: 2.1_
 
-  - [ ] 2.3 Write property test for Doc Tree structure and sorting (Property 1)
+  - [x] 2.3 Write property test for Doc Tree structure and sorting (Property 1)
     - **Property 1: Doc Tree structure and sorting invariant**
     - Generate random sets of file paths, build tree, verify: one node per file, correct nesting, directories sorted before files at every level
     - **Validates: Requirements 2.2, 2.5**
 
-  - [ ] 2.4 Write property test for title derivation (Property 2)
+  - [x] 2.4 Write property test for title derivation (Property 2)
     - **Property 2: Title derivation correctness**
     - Generate random filenames with/without front matter title fields, verify correct title derivation logic
     - **Validates: Requirements 2.3, 2.4**
