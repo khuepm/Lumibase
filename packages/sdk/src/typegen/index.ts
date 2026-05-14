@@ -1,7 +1,8 @@
 import type { TypegenManifest } from './types';
+export type { TypegenManifest, TypegenCollection, TypegenField } from './types';
 
 export interface GenerateOptions {
-  format: 'single' | 'per-collection';
+  format?: 'single' | 'per-collection';
   branded?: boolean;
 }
 

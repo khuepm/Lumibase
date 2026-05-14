@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -171,6 +172,10 @@ export const items = pgTable(
       t.collectionId,
       t.status,
     ),
+    /** GIN over JSONB enables fast contains/path lookups on item data. */
+    dataGinIdx: index('items_data_gin_idx')
+      .using('gin', t.data)
+      .where(sql`${t.deletedAt} is null`),
     siteIdx: index('items_site_idx').on(t.siteId),
   }),
 );

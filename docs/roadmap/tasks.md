@@ -41,15 +41,15 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 - [x] `[BE]` Validation tên collection/field, kiểm tra dependency khi xoá.
 - [x] `[SDK]` Type-safe client cho schema.
 - [x] `[BE]` Script CLI `apps/cms/scripts/typegen.ts` + alias `lumibase typegen`.
-- [ ] `[FE]` Module *Settings → Data Model* (list collection).
-- [ ] `[FE]` Collection wizard 3 bước.
-- [ ] `[FE]` Collection detail tabs (Fields, Display, Archive, Raw JSON).
-- [ ] `[FE]` Field inspector cơ bản (chỉ interfaces `input`, `input-multiline`, `toggle`, `select-dropdown`, `datetime`, `json-raw`).
-- [ ] `[FE]` Live JSON pane (Monaco) cho schema collection, two-way sync.
-- [ ] `[FE]` Drag-drop reorder field (dnd-kit).
+- [x] `[FE]` Module *Settings → Data Model* (list collection).
+- [x] `[FE]` Collection wizard 3 bước.
+- [x] `[FE]` Collection detail tabs (Fields, Display, Archive, Raw JSON).
+- [x] `[FE]` Field inspector cơ bản (chỉ interfaces `input`, `input-multiline`, `toggle`, `select-dropdown`, `datetime`, `json-raw`).
+- [x] `[FE]` Live JSON pane (Monaco) cho schema collection, two-way sync.
+- [x] `[FE]` Drag-drop reorder field (dnd-kit).
 - [x] `[BE]` Endpoint `GET /typegen/schema` (manifest đã apply permission). Xem `features/typegen.md`.
 - [x] `[SDK]` Generator core `packages/sdk/src/typegen/` (manifest → TS string).
-- [ ] `[FE]` Trang *Settings → Developer → Types* (preview + download).
+- [x] `[FE]` Trang *Settings → Developer → Types* (preview + download).
 - [ ] `[DOC]` Capture screenshot vào `docs/features/collections-builder.md`.
 
 ---
@@ -58,14 +58,14 @@ Mục tiêu: tạo/quản lý collection & field qua API + UI (chưa cần permi
 
 Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 
-- [ ] `[DB]` Bảng `items`, `revisions`, `activity` + indexes GIN.
-- [ ] `[BE]` `ItemService` build query Drizzle động (fields, filter, sort, paginate, deep).
-- [ ] `[BE]` Endpoints `/items/:collection` đầy đủ (list, detail, create, patch, put, delete, bulk, raw).
-- [ ] `[BE]` Revision write + revert.
-- [ ] `[BE]` Activity log middleware cho mutation.
-- [ ] `[BE]` Validation pipeline (Zod + JSONata) chạy server-side.
-- [ ] `[BE]` Conditions evaluator (server + helper xuất sang client).
-- [ ] `[BE]` Per-field encryption service (AES-GCM, key Workers Secret).
+- [x] `[DB]` Bảng `items`, `revisions`, `activity` + indexes GIN.
+- [x] `[BE]` `ItemService` build query Drizzle động (fields, filter, sort, paginate, deep).
+- [x] `[BE]` Endpoints `/items/:collection` đầy đủ (list, detail, create, patch, put, delete, bulk, raw).
+- [x] `[BE]` Revision write + revert.
+- [x] `[BE]` Activity log middleware cho mutation.
+- [x] `[BE]` Validation pipeline (Zod + JSONata) chạy server-side.
+- [x] `[BE]` Conditions evaluator (server + helper xuất sang client).
+- [x] `[BE]` Per-field encryption service (AES-GCM, key Workers Secret).
 - [ ] `[FE]` Content module list view (tabular layout) + filter builder + sort + paginate.
 - [ ] `[FE]` Detail editor + tabs side panel (Revisions, Raw JSON).
 - [ ] `[FE]` Interface registry hoàn chỉnh: text, number, choice, boolean, date, relation (m2o/o2m/m2m), file, json-raw, code, wysiwyg, markdown, slug, color, tags, rating, repeater, presentation.
@@ -74,7 +74,7 @@ Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 - [ ] `[FE]` Bulk raw editor cho toàn item.
 - [ ] `[FE]` Revisions diff viewer.
 - [ ] `[FE]` Mustache display template editor (textarea + autocomplete + live preview).
-- [ ] `[BE]` `POST /utils/render-template` (mustache only Phase B).
+- [x] `[BE]` `POST /utils/render-template` (mustache only Phase B).
 - [ ] `[DOC]` Cập nhật `features/field-types-and-config.md` với danh sách interfaces đã implement.
 
 ---
@@ -83,13 +83,13 @@ Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 
 Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy compose.
 
-- [ ] `[BE]` `PermissionService` (compile rule, KV cache, field mask).
-- [ ] `[BE]` Endpoints CRUD `/roles`, `/policies`, `/policies/:id/permissions`, attach/detach.
-- [ ] `[BE]` `GET /permissions/me` + `POST /permissions/check` (trace).
-- [ ] `[BE]` Tích hợp Permission vào ItemService (where injection + post-check).
-- [ ] `[BE]` Magic vars `$CURRENT_USER`, `$CURRENT_SITE`, `$CURRENT_ROLE`, `$NOW`, `$IP`, `$HEADERS.*`.
-- [ ] `[BE]` Time-bound + IP allow/deny ở policy level.
-- [ ] `[BE]` Permission compose rules (xem `features/permissions-rbac.md`).
+- [x] `[BE]` `PermissionService` (compile rule, KV cache, field mask).
+- [x] `[BE]` Endpoints CRUD `/roles`, `/policies`, `/policies/:id/permissions`, attach/detach.
+- [x] `[BE]` `GET /permissions/me` + `POST /permissions/check` (trace).
+- [x] `[BE]` Tích hợp Permission vào ItemService (where injection + post-check).
+- [x] `[BE]` Magic vars `$CURRENT_USER`, `$CURRENT_SITE`, `$CURRENT_ROLE`, `$NOW`, `$IP`, `$HEADERS.*`.
+- [x] `[BE]` Time-bound + IP allow/deny ở policy level.
+- [x] `[BE]` Permission compose rules (xem `features/permissions-rbac.md`).
 - [ ] `[FE]` Module Access Control:
   - [ ] Roles page (list, create, assign users).
   - [ ] Policies page (GUI rules + JSON Monaco).

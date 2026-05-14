@@ -1,15 +1,10 @@
-import { AppShell } from './components/app-shell';
-import { ContentPlaceholder } from './modules/content/placeholder';
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from './router';
 
 /**
- * Root component. Routing (TanStack Router) will land in Phase 0.B once the
- * Logto login flow is wired; for now we render the static module shell so
- * `pnpm dev` produces something visible.
+ * Root component. Hands off to TanStack Router; AppShell + active module
+ * detection live inside the router tree.
  */
 export function App() {
-  return (
-    <AppShell activeModule="content">
-      <ContentPlaceholder />
-    </AppShell>
-  );
+  return <RouterProvider router={router} />;
 }

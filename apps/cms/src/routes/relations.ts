@@ -40,7 +40,7 @@ relationsRouter.get('/', async (c) => {
     return c.json({ data });
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -57,7 +57,7 @@ relationsRouter.post('/', async (c) => {
     return c.json({ data }, 201);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });
 
@@ -67,6 +67,6 @@ relationsRouter.delete('/:id', async (c) => {
     return c.body(null, 204);
   } catch (err) {
     const { status, body } = toError(err);
-    return c.json(body, status);
+    return c.json(body, status as 400);
   }
 });

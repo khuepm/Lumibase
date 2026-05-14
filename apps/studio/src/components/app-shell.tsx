@@ -1,3 +1,4 @@
+import { Link, useRouterState } from '@tanstack/react-router';
 import {
   Database,
   FileText,
@@ -13,34 +14,39 @@ interface ModuleDef {
   id: string;
   label: string;
   icon: typeof FileText;
+  to: string;
 }
 
 const MODULES: ModuleDef[] = [
-  { id: 'content', label: 'Content', icon: FileText },
-  { id: 'files', label: 'Files', icon: Layers },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'access', label: 'Access', icon: ShieldCheck },
-  { id: 'data-model', label: 'Data model', icon: Database },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'content', label: 'Content', icon: FileText, to: '/' },
+  { id: 'files', label: 'Files', icon: Layers, to: '/' },
+  { id: 'users', label: 'Users', icon: Users, to: '/' },
+  { id: 'access', label: 'Access', icon: ShieldCheck, to: '/' },
+  { id: 'data-model', label: 'Data model', icon: Database, to: '/data-model' },
+  { id: 'settings', label: 'Settings', icon: Settings, to: '/' },
 ];
 
 interface AppShellProps {
-  activeModule: string;
   children: ReactNode;
 }
 
 /**
  * Top-level chrome: left module bar + top bar + content slot.
- * Routing + presence land in subsequent tasks.
+ * Active module is derived from the current router location.
  */
-export function AppShell({ activeModule, children }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
+  const { location } = useRouterState();
+  const activeModule = location.pathname.startsWith('/data-model')
+    ? 'data-model'
+    : 'content';
+
   return (
     <div className="flex h-screen w-screen">
       <aside className="flex w-16 flex-col items-center gap-2 border-r bg-muted/30 py-4">
-        {MODULES.map(({ id, label, icon: Icon }) => (
-          <button
+        {MODULES.map(({ id, label, icon: Icon, to }) => (
+          <Link
             key={id}
-            type="button"
+            to={to}
             title={label}
             aria-label={label}
             className={cn(
@@ -51,7 +57,7 @@ export function AppShell({ activeModule, children }: AppShellProps) {
             )}
           >
             <Icon className="h-5 w-5" />
-          </button>
+          </Link>
         ))}
       </aside>
 

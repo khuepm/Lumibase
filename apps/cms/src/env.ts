@@ -18,6 +18,8 @@ export interface Bindings {
   LOGTO_AUDIENCE?: string;
   /** When set to `"true"`, withAuth allows dev tokens (skip JWKS verify). */
   LUMIBASE_DEV_AUTH?: string;
+  /** Secret key for AES-GCM per-field encryption (base64 encoded). */
+  ENCRYPTION_KEY?: string;
 }
 
 /**

@@ -21,6 +21,7 @@
   "dependencies": {
     "@lumibase/database": "workspace:*",
     "@lumibase/sdk": "workspace:*",
+    "@lumibase/shared": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.5",
     "jose": "^5.9.6",
