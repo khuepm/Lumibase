@@ -146,8 +146,14 @@ export function ItemsListPage() {
             )}
             {rows.map((row) => (
               <tr key={row.id} className="border-t hover:bg-muted/20">
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
-                  {row.id.slice(0, 8)}…
+                <td className="px-4 py-2 font-mono text-xs">
+                  <Link
+                    to="/content/$collection/$id"
+                    params={{ collection, id: row.id }}
+                    className="text-primary hover:underline"
+                  >
+                    {row.id.slice(0, 8)}…
+                  </Link>
                 </td>
                 <td className="px-4 py-2"><StatusBadge status={row.status} /></td>
                 {visibleFields.map((f) => (
