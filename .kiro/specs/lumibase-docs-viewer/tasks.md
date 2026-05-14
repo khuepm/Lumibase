@@ -54,29 +54,29 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random filenames with/without front matter title fields, verify correct title derivation logic
     - **Validates: Requirements 2.3, 2.4**
 
-- [ ] 3. Checkpoint - Verify plugin and registry
+- [x] 3. Checkpoint - Verify plugin and registry
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Implement routing and page layout
-  - [ ] 4.1 Set up React Router v7 with route configuration
+- [x] 4. Implement routing and page layout
+  - [x] 4.1 Set up React Router v7 with route configuration
     - Create `src/router.tsx` with `createBrowserRouter`
     - Define routes: `/` → redirect to `/docs/README`, `/docs/:slug*` → DocPage, `*` → NotFoundPage
     - Use HTML5 History API (no hash fragments)
     - Wire router into `App.tsx` with `RouterProvider`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 4.2 Create the app layout shell with responsive structure
+  - [x] 4.2 Create the app layout shell with responsive structure
     - Create `src/components/Layout.tsx` with three-column layout: Sidebar (left), Content (center), ToC (right)
     - Implement responsive behavior: sidebar hidden on mobile (<768px) with hamburger toggle
     - ToC panel visible only on screens >1024px
     - _Requirements: 3.6, 6.2_
 
-  - [ ] 4.3 Create the NotFoundPage component
+  - [x] 4.3 Create the NotFoundPage component
     - Create `src/pages/NotFoundPage.tsx`
     - Display "404 — Document Not Found" message with a link back to `/docs/README`
     - _Requirements: 5.4_
 
-- [ ] 5. Implement the Sidebar component
+- [~] 5. Implement the Sidebar component
   - [ ] 5.1 Build the recursive tree Sidebar component
     - Create `src/components/Sidebar.tsx` and `src/components/SidebarNode.tsx`
     - Render `DocTree` as a collapsible tree: directories as collapsible groups, files as clickable links
@@ -95,7 +95,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Toggle sidebar visibility with overlay on mobile
     - _Requirements: 3.6_
 
-- [ ] 6. Implement the Markdown Renderer
+- [~] 6. Implement the Markdown Renderer
   - [ ] 6.1 Create the MarkdownRenderer component with plugin pipeline
     - Create `src/components/MarkdownRenderer.tsx`
     - Configure `react-markdown` with plugins: `remark-gfm`, `rehype-slug`, `rehype-shiki`
@@ -123,7 +123,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random links (relative .md to known slugs, absolute URLs, relative to unknown slugs), verify correct href rewriting and attributes
     - **Validates: Requirements 8.1, 8.3, 8.4**
 
-- [ ] 7. Implement the DocPage and metadata display
+- [~] 7. Implement the DocPage and metadata display
   - [ ] 7.1 Create the DocPage component
     - Create `src/pages/DocPage.tsx`
     - Load doc content from `docIndex` based on route slug parameter
@@ -144,7 +144,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random valid ISO date strings, verify displayed format is `DD/MM/YYYY`
     - **Validates: Requirements 9.5**
 
-- [ ] 8. Implement the Table of Contents
+- [~] 8. Implement the Table of Contents
   - [ ] 8.1 Create the ToC Generator component
     - Create `src/components/TableOfContents.tsx`
     - Extract H2 and H3 headings from rendered content using heading IDs (from `rehype-slug`)
@@ -159,10 +159,10 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random markdown with various heading levels, verify ToC contains exactly H2 and H3 headings in order, and is not rendered when fewer than 2 exist
     - **Validates: Requirements 6.1, 6.5**
 
-- [ ] 9. Checkpoint - Verify core rendering pipeline
+- [~] 9. Checkpoint - Verify core rendering pipeline
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Implement the Search Engine
+- [~] 10. Implement the Search Engine
   - [ ] 10.1 Create the search indexing and query service
     - Create `src/lib/search.ts`
     - Initialize MiniSearch with fields: `title` (boost: 2), `content` (boost: 1); stored fields: `title`, `slug`
