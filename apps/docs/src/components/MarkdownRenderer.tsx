@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
 import rehypeSlug from 'rehype-slug';
-import rehypeShiki from '@shikijs/rehype';
+import rehypeShikiFromHighlighter from '@shikijs/rehype/core';
+import { createHighlighter, type Highlighter } from 'shiki';
 import type { Components } from 'react-markdown';
 import type { HTMLAttributes, TableHTMLAttributes } from 'react';
 import { LinkRewriter } from './LinkRewriter';
@@ -203,33 +204,45 @@ const components: Components = {
 };
 
 /**
- * Shiki rehype plugin configuration.
- * Highlights code blocks for the specified languages.
- * Code blocks without a language fall back to plain monospace (no highlighting).
+ * Shiki highlighter configuration.
+ * Pre-creates a highlighter instance so rehype-shiki can run synchronously
+ * within react-markdown's runSync pipeline.
  */
-const rehypeShikiOptions = {
-  themes: {
-    light: 'github-light',
-    dark: 'github-dark',
-  },
-  langs: [
-    'typescript',
-    'javascript',
-    'json',
-    'yaml',
-    'sql',
-    'bash',
-    'markdown',
-  ] as const,
-  // When no language is specified, skip highlighting (renders as plain monospace)
-  defaultLanguage: undefined,
-};
+const SHIKI_THEMES = ['github-light', 'github-dark'] as const;
+const SHIKI_LANGS = [
+  'typescript',
+  'javascript',
+  'json',
+  'yaml',
+  'sql',
+  'bash',
+  'markdown',
+] as const;
+
+// Singleton promise so we only create one highlighter instance
+let highlighterPromise: Promise<Highlighter> | null = null;
+
+function getHighlighterInstance(): Promise<Highlighter> {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      themes: [...SHIKI_THEMES],
+      langs: [...SHIKI_LANGS],
+    });
+  }
+  return highlighterPromise;
+}
 
 export function MarkdownRenderer({
   content,
   currentSlug,
   knownSlugs,
 }: MarkdownRendererProps) {
+  const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
+
+  useEffect(() => {
+    getHighlighterInstance().then(setHighlighter);
+  }, []);
+
   // Build components object with the link rewriter that has access to slug context.
   // Memoized so react-markdown doesn't re-create component instances on every render.
   const componentsWithLinks: Components = useMemo(
@@ -246,11 +259,29 @@ export function MarkdownRenderer({
     [currentSlug, knownSlugs],
   );
 
+  // Build rehype plugins — only include shiki when highlighter is ready
+  const rehypePlugins = useMemo(() => {
+    const plugins: any[] = [rehypeSlug];
+    if (highlighter) {
+      plugins.push([
+        rehypeShikiFromHighlighter,
+        highlighter,
+        {
+          themes: {
+            light: 'github-light',
+            dark: 'github-dark',
+          },
+        },
+      ]);
+    }
+    return plugins;
+  }, [highlighter]);
+
   return (
     <div className="prose-docs max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkFrontmatter]}
-        rehypePlugins={[rehypeSlug, [rehypeShiki, rehypeShikiOptions]]}
+        rehypePlugins={rehypePlugins}
         components={componentsWithLinks}
       >
         {content}
