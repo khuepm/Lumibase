@@ -83,13 +83,13 @@ Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 
 Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy compose.
 
-- [ ] `[BE]` `PermissionService` (compile rule, KV cache, field mask).
-- [ ] `[BE]` Endpoints CRUD `/roles`, `/policies`, `/policies/:id/permissions`, attach/detach.
-- [ ] `[BE]` `GET /permissions/me` + `POST /permissions/check` (trace).
-- [ ] `[BE]` Tích hợp Permission vào ItemService (where injection + post-check).
-- [ ] `[BE]` Magic vars `$CURRENT_USER`, `$CURRENT_SITE`, `$CURRENT_ROLE`, `$NOW`, `$IP`, `$HEADERS.*`.
-- [ ] `[BE]` Time-bound + IP allow/deny ở policy level.
-- [ ] `[BE]` Permission compose rules (xem `features/permissions-rbac.md`).
+- [x] `[BE]` `PermissionService` (compile rule, KV cache, field mask).
+- [x] `[BE]` Endpoints CRUD `/roles`, `/policies`, `/policies/:id/permissions`, attach/detach.
+- [x] `[BE]` `GET /permissions/me` + `POST /permissions/check` (trace).
+- [x] `[BE]` Tích hợp Permission vào ItemService (where injection + post-check).
+- [x] `[BE]` Magic vars `$CURRENT_USER`, `$CURRENT_SITE`, `$CURRENT_ROLE`, `$NOW`, `$IP`, `$HEADERS.*`.
+- [x] `[BE]` Time-bound + IP allow/deny ở policy level.
+- [x] `[BE]` Permission compose rules (xem `features/permissions-rbac.md`).
 - [ ] `[FE]` Module Access Control:
   - [ ] Roles page (list, create, assign users).
   - [ ] Policies page (GUI rules + JSON Monaco).

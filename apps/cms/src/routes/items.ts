@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import type { AppEnv } from '../env';
 import { ItemService, ItemServiceError } from '../services/item-service';
@@ -41,16 +41,26 @@ const bulkSchema = z.object({
   items: z.array(z.record(z.unknown())),
 });
 
-const buildService = (c: {
-  get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never;
-  env: AppEnv['Bindings'];
-}) =>
-  new ItemService({
-    db: c.get('db') as never,
-    siteId: c.get('siteId') as unknown as string,
-    userId: ((c.get('auth') as unknown as { userId?: string } | null) ?? null)?.userId ?? null,
-    cache: c.env.CONFIG_CACHE,
+const buildService = (c: Context<AppEnv>) => {
+  const auth = c.get('auth');
+  const headers: Record<string, string> = {};
+  c.req.raw.headers.forEach((value, key) => {
+    headers[key.toLowerCase()] = value;
   });
+  return new ItemService({
+    db: c.get('db'),
+    siteId: c.get('siteId'),
+    userId: auth?.userId ?? null,
+    cache: c.env.CONFIG_CACHE,
+    permissionCtx: {
+      userId: auth?.userId ?? null,
+      siteId: c.get('siteId'),
+      roleId: null,
+      ip: c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null,
+      headers,
+    },
+  });
+};
 
 const toError = (err: unknown) => {
   if (err instanceof ItemServiceError) {

@@ -10,6 +10,8 @@ import { and, asc, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 import { SchemaService } from './schema-service';
 import { validateItem } from './validation';
 import type { KVNamespace } from '@cloudflare/workers-types';
+import { PermissionService, type PermissionAction } from './permission-service';
+import type { MagicContext } from './permission-dsl';
 
 /**
  * ItemService — generic CRUD over the `items` JSONB store, driven by the
@@ -81,6 +83,8 @@ export interface ItemServiceDeps {
   siteId: string;
   /** Caller user id; written to revisions/activity for audit. */
   userId?: string | null;
+  /** Optional MagicContext to enable permission filtering (Phase C). */
+  permissionCtx?: MagicContext;
 }
 
 const STRUCTURAL_FIELDS = new Set([
@@ -200,12 +204,26 @@ function buildSort(sort?: string[]): SQL[] {
 
 export class ItemService {
   private readonly schemaService: SchemaService;
+  private readonly permissions: PermissionService | null;
   constructor(private readonly deps: ItemServiceDeps) {
     this.schemaService = new SchemaService({
       db: deps.db,
       siteId: deps.siteId,
       cache: deps.cache,
     });
+    this.permissions = deps.permissionCtx
+      ? new PermissionService({ db: deps.db, cache: deps.cache, ctx: deps.permissionCtx })
+      : null;
+  }
+
+  /** Resolve permission for the active principal; returns null when denied. */
+  private async perm(collectionName: string, action: PermissionAction) {
+    if (!this.permissions) return null;
+    const granted = await this.permissions.canAccess(collectionName, action);
+    if (!granted) {
+      throw new ItemServiceError('FORBIDDEN', `Action "${action}" on "${collectionName}" is not allowed.`, 403);
+    }
+    return granted;
   }
 
   private async resolveCollection(name: string) {
@@ -222,12 +240,15 @@ export class ItemService {
 
   async list(collectionName: string, params: ListItemsParams = {}) {
     const coll = await this.resolveCollection(collectionName);
+    const perm = await this.perm(collectionName, 'read');
+    const permClause = this.permissions?.whereFor(perm) ?? undefined;
     const where = and(
       scopeSite(items.siteId, this.deps.siteId),
       eq(items.collectionId, coll.id),
       isNull(items.deletedAt),
       params.status ? eq(items.status, params.status) : undefined,
       buildFilter(params.filter),
+      permClause,
     );
 
     const limit = Math.min(params.limit ?? 25, 200);
@@ -247,13 +268,20 @@ export class ItemService {
       .where(where);
     const total = totals[0]?.count ?? 0;
 
+    const knownFields = (await this.schemaService.getCompiled(collectionName))?.fields.map((f) => f.name) ?? [];
+    const masked = perm && this.permissions
+      ? rows.map((r) => this.permissions!.maskItem(perm, r as ItemRow, knownFields))
+      : rows;
+
     return {
-      data: params.fields ? rows.map((r) => projectFields(r as ItemRow, params.fields!)) : rows,
+      data: params.fields ? masked.map((r) => projectFields(r as ItemRow, params.fields!)) : masked,
       meta: { total, limit, offset },
     };
   }
 
   async detail(collectionName: string, id: string, fields?: string[]) {
+    const perm = await this.perm(collectionName, 'read');
+    const permClause = this.permissions?.whereFor(perm) ?? undefined;
     const coll = await this.resolveCollection(collectionName);
     const [row] = await this.deps.db
       .select()
@@ -264,16 +292,24 @@ export class ItemService {
           eq(items.collectionId, coll.id),
           eq(items.id, id),
           isNull(items.deletedAt),
+          permClause,
         ),
       )
       .limit(1);
     if (!row) throw new ItemServiceError('NOT_FOUND', `Item "${id}" not found.`, 404);
-    return fields ? projectFields(row as ItemRow, fields) : row;
+    const knownFields = (await this.schemaService.getCompiled(collectionName))?.fields.map((f) => f.name) ?? [];
+    const masked = perm && this.permissions ? this.permissions.maskItem(perm, row as ItemRow, knownFields) : row;
+    return fields ? projectFields(masked as ItemRow, fields) : masked;
   }
 
   async create(collectionName: string, payload: { data: Record<string, unknown>; status?: string; sort?: number }) {
     const coll = await this.resolveCollection(collectionName);
-    const data = await this.runValidation(collectionName, payload.data ?? {}, false);
+    const perm = await this.perm(collectionName, 'create');
+    const withPresets = this.permissions?.applyPresets(perm, payload.data ?? {}) ?? payload.data ?? {};
+    if (perm && this.permissions && !this.permissions.matches(perm, withPresets)) {
+      throw new ItemServiceError('FORBIDDEN', 'Item violates create rule.', 403);
+    }
+    const data = await this.runValidation(collectionName, withPresets, false);
     const [row] = await this.deps.db
       .insert(items)
       .values({

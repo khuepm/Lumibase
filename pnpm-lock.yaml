@@ -23,6 +23,9 @@ importers:
       '@lumibase/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
+      '@lumibase/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       drizzle-orm:
         specifier: ^0.36.4
         version: 0.36.4(@cloudflare/workers-types@4.20260511.1)(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1)

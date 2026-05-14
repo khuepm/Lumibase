@@ -9,7 +9,10 @@ import { authRouter } from './routes/auth';
 import { collectionsRouter } from './routes/collections';
 import { deliverRouter } from './routes/deliver';
 import { itemsRouter } from './routes/items';
+import { permissionsRouter } from './routes/permissions';
+import { policiesRouter } from './routes/policies';
 import { relationsRouter } from './routes/relations';
+import { rolesRouter } from './routes/roles';
 import { typegenRouter } from './routes/typegen';
 import { utilsRouter } from './routes/utils';
 
@@ -43,7 +46,10 @@ api.route('/collections', collectionsRouter);
 api.route('/relations', relationsRouter);
 api.route('/items', itemsRouter);
 api.route('/typegen', typegenRouter);
-// Future routers (Phase C+): permissions, presets, ...
+api.route('/roles', rolesRouter);
+api.route('/policies', policiesRouter);
+api.route('/permissions', permissionsRouter);
+// Future routers: presets, translations, ...
 
 app.route('/api/v1', api);
 
