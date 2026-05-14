@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FieldResource, ItemRow } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { resolveInterface } from './interfaces/registry';
 import { RevisionsPanel } from './revisions-panel';
 import { RawJsonPanel } from './raw-json-panel';
 
@@ -228,9 +229,9 @@ function Meta({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * Minimal interim editor — slice 3 replaces this with the full Interface registry.
- * Renders a labelled text input per field, plus a JSON textarea fallback for
- * non-string values.
+ * Renders one editor per field by dispatching to the Interface registry
+ * (`resolveInterface`). Each interface owns its own value transform; here we
+ * just track the current cell value and patch the parent draft on change.
  */
 function FieldsTab({
   fields,
@@ -245,39 +246,24 @@ function FieldsTab({
     return <p className="text-sm text-muted-foreground">No editable fields.</p>;
   }
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {fields.map((f) => {
-        const raw = value?.[f.name];
-        const isPrimitive =
-          raw === null || raw === undefined || ['string', 'number', 'boolean'].includes(typeof raw);
+        const Interface = resolveInterface(f);
         return (
-          <label key={f.id} className="block">
-            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+          <div key={f.id}>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {f.name}
               {f.required && <span className="ml-1 text-destructive">*</span>}
-              <span className="ml-2 text-[10px] uppercase">{f.type}</span>
-            </span>
-            {isPrimitive ? (
-              <input
-                value={raw === null || raw === undefined ? '' : String(raw)}
-                onChange={(e) => onChange({ ...value, [f.name]: e.target.value })}
-                className="w-full rounded-md border bg-background px-2 py-1 text-sm"
-              />
-            ) : (
-              <textarea
-                value={JSON.stringify(raw, null, 2)}
-                onChange={(e) => {
-                  try {
-                    onChange({ ...value, [f.name]: JSON.parse(e.target.value) });
-                  } catch {
-                    /* ignore parse errors until valid */
-                  }
-                }}
-                rows={4}
-                className="w-full rounded-md border bg-background px-2 py-1 font-mono text-xs"
-              />
-            )}
-          </label>
+              <span className="ml-2 text-[10px] uppercase">
+                {f.interface || f.type}
+              </span>
+            </label>
+            <Interface
+              field={f}
+              value={value?.[f.name]}
+              onChange={(next) => onChange({ ...value, [f.name]: next })}
+            />
+          </div>
         );
       })}
     </div>
