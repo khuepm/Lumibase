@@ -38,7 +38,9 @@ export function AppShell({ children }: AppShellProps) {
   const { location } = useRouterState();
   const activeModule = location.pathname.startsWith('/data-model')
     ? 'data-model'
-    : 'content';
+    : location.pathname.startsWith('/settings')
+      ? 'settings'
+      : 'content';
 
   return (
     <div className="flex h-screen w-screen">

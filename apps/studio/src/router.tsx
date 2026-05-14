@@ -5,7 +5,9 @@ import {
   Outlet,
 } from '@tanstack/react-router';
 import { AppShell } from './components/app-shell';
-import { ContentPlaceholder } from './modules/content/placeholder';
+import { ContentIndexPage } from './modules/content/index-page';
+import { ItemDetailPage } from './modules/content/item-detail';
+import { ItemsListPage } from './modules/content/items-list';
 import { CollectionsListPage } from './modules/data-model/list';
 import { CollectionDetailPage } from './modules/data-model/detail';
 import { CollectionWizardPage } from './modules/data-model/wizard';
@@ -22,7 +24,19 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: ContentPlaceholder,
+  component: ContentIndexPage,
+});
+
+const contentCollectionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/content/$collection',
+  component: ItemsListPage,
+});
+
+const contentItemRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/content/$collection/$id',
+  component: ItemDetailPage,
 });
 
 const dataModelRoute = createRoute({
@@ -50,6 +64,8 @@ const settingsTypesRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  contentCollectionRoute,
+  contentItemRoute,
   dataModelRoute,
   dataModelNewRoute,
   dataModelDetailRoute,
