@@ -186,7 +186,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random document sets and queries (≥2 chars), verify matching documents are returned and snippets contain matched terms
     - **Validates: Requirements 7.2, 7.3**
 
-- [-] 11. Integration and final wiring
+- [x] 11. Integration and final wiring
   - [x] 11.1 Wire all components together in the app shell
     - Connect Sidebar, DocPage, ToC, and SearchDialog in the Layout component
     - Ensure navigation from Sidebar, Search, and internal links all use React Router (no full page reload)
@@ -195,7 +195,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Register the `vite-plugin-docs-loader` in `vite.config.ts`
     - _Requirements: 1.1, 3.2, 5.1, 5.3, 5.4, 7.4, 8.2_
 
-  - [~] 11.2 Write integration tests for end-to-end flows
+  - [x] 11.2 Write integration tests for end-to-end flows
     - Test full app render with test markdown files
     - Test sidebar navigation triggers correct page loads
     - Test search indexes documents and returns results
