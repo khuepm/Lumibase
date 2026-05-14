@@ -144,8 +144,8 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Generate random valid ISO date strings, verify displayed format is `DD/MM/YYYY`
     - **Validates: Requirements 9.5**
 
-- [~] 8. Implement the Table of Contents
-  - [~] 8.1 Create the ToC Generator component
+- [x] 8. Implement the Table of Contents
+  - [x] 8.1 Create the ToC Generator component
     - Create `src/components/TableOfContents.tsx`
     - Extract H2 and H3 headings from rendered content using heading IDs (from `rehype-slug`)
     - Render as sticky panel on right side (screens >1024px)
@@ -154,16 +154,16 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Hide ToC when fewer than 2 H2/H3 headings exist
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [~] 8.2 Write property test for ToC heading extraction (Property 4)
+  - [x] 8.2 Write property test for ToC heading extraction (Property 4)
     - **Property 4: ToC heading extraction**
     - Generate random markdown with various heading levels, verify ToC contains exactly H2 and H3 headings in order, and is not rendered when fewer than 2 exist
     - **Validates: Requirements 6.1, 6.5**
 
-- [~] 9. Checkpoint - Verify core rendering pipeline
+- [x] 9. Checkpoint - Verify core rendering pipeline
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 10. Implement the Search Engine
-  - [~] 10.1 Create the search indexing and query service
+- [x] 10. Implement the Search Engine
+  - [x] 10.1 Create the search indexing and query service
     - Create `src/lib/search.ts`
     - Initialize MiniSearch with fields: `title` (boost: 2), `content` (boost: 1); stored fields: `title`, `slug`
     - Enable prefix search and fuzzy matching (distance 1)
@@ -173,7 +173,7 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Return results within 300ms for queries of at least 2 characters
     - _Requirements: 7.1, 7.2, 7.3, 7.5_
 
-  - [~] 10.2 Create the SearchDialog component
+  - [x] 10.2 Create the SearchDialog component
     - Create `src/components/SearchDialog.tsx`
     - Render search input with keyboard shortcut (Cmd/Ctrl+K) to open
     - Display results as a list with title and highlighted snippet
@@ -181,13 +181,13 @@ Build a standalone documentation viewer app at `apps/docs` using Vite + React + 
     - Hide results panel when input is cleared, return focus to input
     - _Requirements: 7.2, 7.3, 7.4, 7.6_
 
-  - [~] 10.3 Write property test for search relevance and highlighting (Property 5)
+  - [x] 10.3 Write property test for search relevance and highlighting (Property 5)
     - **Property 5: Search returns relevant results with highlighted terms**
     - Generate random document sets and queries (≥2 chars), verify matching documents are returned and snippets contain matched terms
     - **Validates: Requirements 7.2, 7.3**
 
-- [ ] 11. Integration and final wiring
-  - [~] 11.1 Wire all components together in the app shell
+- [-] 11. Integration and final wiring
+  - [x] 11.1 Wire all components together in the app shell
     - Connect Sidebar, DocPage, ToC, and SearchDialog in the Layout component
     - Ensure navigation from Sidebar, Search, and internal links all use React Router (no full page reload)
     - Verify `/` redirects to `/docs/README`

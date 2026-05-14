@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { docTree } from 'virtual:docs-registry';
 import { Sidebar } from './Sidebar';
+import { SearchDialog } from './SearchDialog';
 import { TableOfContents } from './TableOfContents';
 
 /**
@@ -76,17 +77,21 @@ export function Layout() {
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar with hamburger toggle (mobile only) */}
-        <header className="flex h-14 items-center border-b px-4 md:hidden">
+        {/* Top bar with hamburger toggle (mobile) and search (all screens) */}
+        <header className="flex h-14 items-center border-b px-4">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+            className="rounded-md p-1 text-muted-foreground hover:bg-accent md:hidden"
             aria-label="Open sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="ml-3 text-sm font-semibold">Lumibase Docs</span>
+          <span className="ml-3 text-sm font-semibold md:hidden">Lumibase Docs</span>
+          <span className="hidden text-sm font-semibold md:inline">Lumibase Docs</span>
+          <div className="ml-auto">
+            <SearchDialog />
+          </div>
         </header>
 
         {/* Content + ToC wrapper */}
