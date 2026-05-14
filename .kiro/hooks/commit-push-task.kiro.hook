@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Commit & Push After Task",
+  "description": "After a spec task is completed, automatically create a git commit with only the files modified during that task and push to the current branch. This ensures parallel agents working on different features don't accidentally include each other's changes.",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A spec task has just been completed. Please do the following:\n1. Run `git status` to see all modified files.\n2. Identify ONLY the files that were modified as part of THIS specific task (based on the task description and the changes you made). Do NOT include files that may have been modified by another parallel agent working on a different feature.\n3. Stage only those relevant files using `git add <file1> <file2> ...` (do NOT use `git add .`).\n4. Create a commit with a clear message referencing the task that was completed, e.g. \"feat: [task description]\".\n5. Push to the current branch using `git push`.\n\nIMPORTANT: Be very careful to only commit files related to the task you just completed. If you're unsure whether a file belongs to this task, do NOT include it."
+  }
+}
