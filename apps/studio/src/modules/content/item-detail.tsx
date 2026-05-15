@@ -6,6 +6,7 @@ import type { FieldResource, ItemRow } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { resolveInterface } from './interfaces/registry';
+import { RawToggle } from './interfaces/raw-toggle';
 import { RevisionsPanel } from './revisions-panel';
 import { RawJsonPanel } from './raw-json-panel';
 
@@ -249,6 +250,8 @@ function FieldsTab({
     <div className="space-y-4">
       {fields.map((f) => {
         const Interface = resolveInterface(f);
+        const cellValue = value?.[f.name];
+        const setCell = (next: unknown) => onChange({ ...value, [f.name]: next });
         return (
           <div key={f.id}>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">
@@ -258,11 +261,9 @@ function FieldsTab({
                 {f.interface || f.type}
               </span>
             </label>
-            <Interface
-              field={f}
-              value={value?.[f.name]}
-              onChange={(next) => onChange({ ...value, [f.name]: next })}
-            />
+            <RawToggle value={cellValue} onChange={setCell}>
+              <Interface field={f} value={cellValue} onChange={setCell} />
+            </RawToggle>
           </div>
         );
       })}

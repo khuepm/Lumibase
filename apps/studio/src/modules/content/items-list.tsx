@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Filter, RefreshCw } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Code2, Filter, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FieldResource } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { BulkRawEditor } from './bulk-raw-editor';
+import { resolveDisplay } from './displays/registry';
 import { FilterBuilder, compileFilter, type FilterCondition } from './filter-builder';
 
 const PAGE_SIZE = 25;
@@ -27,6 +29,8 @@ export function ItemsListPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [sort, setSort] = useState<SortState>({ field: 'updated_at', dir: 'desc' });
   const [page, setPage] = useState(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showBulk, setShowBulk] = useState(false);
 
   const fieldsQuery = useQuery({
     queryKey: ['fields', collection],
@@ -89,6 +93,16 @@ export function ItemsListPage() {
             <Filter className="h-3.5 w-3.5" />
             Filters {filters.length > 0 && <span className="text-primary">({filters.length})</span>}
           </button>
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowBulk(true)}
+              className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary/5 px-2 py-1 text-xs text-primary"
+            >
+              <Code2 className="h-3.5 w-3.5" />
+              Edit raw ({selected.size})
+            </button>
+          )}
           <button
             type="button"
             onClick={() => itemsQuery.refetch()}
@@ -123,6 +137,18 @@ export function ItemsListPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
             <tr>
+              <th className="w-8 px-3 py-2">
+                <input
+                  type="checkbox"
+                  checked={rows.length > 0 && rows.every((r) => selected.has(r.id))}
+                  onChange={(e) => {
+                    const next = new Set(selected);
+                    if (e.target.checked) rows.forEach((r) => next.add(r.id));
+                    else rows.forEach((r) => next.delete(r.id));
+                    setSelected(next);
+                  }}
+                />
+              </th>
               <SortableTh label="id" field="id" sort={sort} onClick={toggleSort} />
               <SortableTh label="status" field="status" sort={sort} onClick={toggleSort} />
               {visibleFields.map((f) => (
@@ -139,13 +165,25 @@ export function ItemsListPage() {
           </thead>
           <tbody>
             {itemsQuery.isLoading && (
-              <tr><td colSpan={visibleFields.length + 3} className="px-4 py-6 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={visibleFields.length + 4} className="px-4 py-6 text-center text-muted-foreground">Loading…</td></tr>
             )}
             {!itemsQuery.isLoading && rows.length === 0 && (
-              <tr><td colSpan={visibleFields.length + 3} className="px-4 py-6 text-center text-muted-foreground">No items match.</td></tr>
+              <tr><td colSpan={visibleFields.length + 4} className="px-4 py-6 text-center text-muted-foreground">No items match.</td></tr>
             )}
             {rows.map((row) => (
               <tr key={row.id} className="border-t hover:bg-muted/20">
+                <td className="px-3 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(row.id)}
+                    onChange={(e) => {
+                      const next = new Set(selected);
+                      if (e.target.checked) next.add(row.id);
+                      else next.delete(row.id);
+                      setSelected(next);
+                    }}
+                  />
+                </td>
                 <td className="px-4 py-2 font-mono text-xs">
                   <Link
                     to="/content/$collection/$id"
@@ -156,11 +194,14 @@ export function ItemsListPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-2"><StatusBadge status={row.status} /></td>
-                {visibleFields.map((f) => (
-                  <td key={f.id} className="px-4 py-2 text-muted-foreground">
-                    {renderCell(row.data?.[f.name])}
-                  </td>
-                ))}
+                {visibleFields.map((f) => {
+                  const Display = resolveDisplay(f);
+                  return (
+                    <td key={f.id} className="px-4 py-2 text-muted-foreground">
+                      <Display field={f} value={row.data?.[f.name]} />
+                    </td>
+                  );
+                })}
                 <td className="px-4 py-2 text-xs text-muted-foreground">
                   {new Date(row.updatedAt).toLocaleString()}
                 </td>
@@ -196,6 +237,19 @@ export function ItemsListPage() {
           </button>
         </div>
       </footer>
+
+      {showBulk && (
+        <BulkRawEditor
+          collection={collection}
+          ids={Array.from(selected)}
+          onClose={() => setShowBulk(false)}
+          onSaved={() => {
+            setShowBulk(false);
+            setSelected(new Set());
+            itemsQuery.refetch();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -243,13 +297,3 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function renderCell(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'string') return value.length > 60 ? value.slice(0, 60) + '…' : value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  try {
-    return JSON.stringify(value).slice(0, 60);
-  } catch {
-    return '[object]';
-  }
-}
