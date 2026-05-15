@@ -3,6 +3,7 @@ import { BadgeDisplay } from './badge';
 import { BooleanIconDisplay } from './boolean-icon';
 import { ColorSwatchDisplay } from './color-swatch';
 import { FormattedDateDisplay } from './formatted-date';
+import { MustacheDisplay } from './mustache';
 import { RatingStarsDisplay } from './rating-stars';
 import { RelationDisplay } from './relation';
 import { TagsPillsDisplay } from './tags-pills';
@@ -24,6 +25,7 @@ const REGISTRY: Record<string, DisplayComponent<any>> = {
   'color-swatch': ColorSwatchDisplay,
   'rating-stars': RatingStarsDisplay,
   'tags-pills': TagsPillsDisplay,
+  mustache: MustacheDisplay,
 };
 
 const INTERFACE_TO_DISPLAY: Record<string, string> = {

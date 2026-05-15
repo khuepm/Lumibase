@@ -198,7 +198,11 @@ export function ItemsListPage() {
                   const Display = resolveDisplay(f);
                   return (
                     <td key={f.id} className="px-4 py-2 text-muted-foreground">
-                      <Display field={f} value={row.data?.[f.name]} />
+                      <Display
+                        field={f}
+                        value={row.data?.[f.name]}
+                        row={row.data as Record<string, unknown> | undefined}
+                      />
                     </td>
                   );
                 })}

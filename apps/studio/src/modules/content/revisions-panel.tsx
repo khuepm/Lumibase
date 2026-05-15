@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { History, RotateCcw } from 'lucide-react';
+import { Braces, GitCompare, History, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import type { RevisionRow } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { RevisionsDiff } from './revisions-diff';
 
 interface RevisionsPanelProps {
   collection: string;
@@ -13,14 +14,16 @@ interface RevisionsPanelProps {
 }
 
 /**
- * Lists revisions for an item and lets the user revert.
- * The diff viewer (per-field before/after) lands in slice 6; this panel exposes
- * the raw `delta` JSON for now so the user can inspect change history.
+ * Lists revisions for an item, lets the user revert, and surfaces a per-field
+ * before/after diff. The view can flip to raw JSON for inspection when the
+ * structured diff isn't enough.
  */
 export function RevisionsPanel({ collection, itemId, onRevert }: RevisionsPanelProps) {
   const client = getApiClient();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
+  const [view, setView] = useState<'diff' | 'raw'>('diff');
+  const [showUnchanged, setShowUnchanged] = useState(false);
 
   const query = useQuery({
     queryKey: ['revisions', collection, itemId],
@@ -88,29 +91,91 @@ export function RevisionsPanel({ collection, itemId, onRevert }: RevisionsPanelP
           <p className="text-sm text-muted-foreground">Select a revision to inspect.</p>
         ) : (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">Revision {active.id.slice(0, 8)}…</h3>
-              <button
-                type="button"
-                onClick={() => revertMutation.mutate(active.id)}
-                disabled={revertMutation.isPending}
-                className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-accent disabled:opacity-50"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                {revertMutation.isPending ? 'Reverting…' : 'Revert to this'}
-              </button>
+              <div className="flex items-center gap-1">
+                <div className="flex overflow-hidden rounded-md border text-xs">
+                  <ViewToggle
+                    active={view === 'diff'}
+                    onClick={() => setView('diff')}
+                    label="Diff"
+                    icon={<GitCompare className="h-3 w-3" />}
+                  />
+                  <ViewToggle
+                    active={view === 'raw'}
+                    onClick={() => setView('raw')}
+                    label="Raw"
+                    icon={<Braces className="h-3 w-3" />}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => revertMutation.mutate(active.id)}
+                  disabled={revertMutation.isPending}
+                  className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-accent disabled:opacity-50"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {revertMutation.isPending ? 'Reverting…' : 'Revert to this'}
+                </button>
+              </div>
             </div>
             {revertMutation.error && (
               <div className="rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
                 Revert failed.
               </div>
             )}
-            <pre className="max-h-[50vh] overflow-auto rounded-md border bg-muted/20 p-3 text-xs">
-{JSON.stringify(active.delta, null, 2)}
-            </pre>
+            {view === 'diff' ? (
+              <div className="space-y-2">
+                <label className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={showUnchanged}
+                    onChange={(e) => setShowUnchanged(e.target.checked)}
+                  />
+                  Show unchanged fields
+                </label>
+                <div className="max-h-[55vh] overflow-y-auto pr-1">
+                  <RevisionsDiff
+                    before={active.delta?.before ?? null}
+                    after={active.delta?.after ?? null}
+                    showUnchanged={showUnchanged}
+                  />
+                </div>
+              </div>
+            ) : (
+              <pre className="max-h-[50vh] overflow-auto rounded-md border bg-muted/20 p-3 text-xs">
+                {JSON.stringify(active.delta, null, 2)}
+              </pre>
+            )}
           </>
         )}
       </div>
     </div>
+  );
+}
+
+function ViewToggle({
+  active,
+  onClick,
+  label,
+  icon,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1 px-2 py-1',
+        active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent',
+      )}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
