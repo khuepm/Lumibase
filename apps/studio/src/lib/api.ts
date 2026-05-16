@@ -1,4 +1,4 @@
-import { createLumiClient, type LumiClient } from '@lumibase/sdk';
+import { createLumiClient, legacyRest } from '@lumibase/sdk';
 
 /**
  * Studio API client. In Phase 0/A we run against the Vite dev proxy so the
@@ -26,16 +26,22 @@ export function getActiveToken(): string {
   return localStorage.getItem(STORAGE_KEY.token) || DEFAULT_DEV_TOKEN;
 }
 
-let cached: { client: LumiClient; site: string; token: string } | null = null;
+function createApiClient(token: string, site: string) {
+  return createLumiClient({ url: '', token, siteId: site }).with(legacyRest());
+}
 
-export function getApiClient(): LumiClient {
+export type StudioApiClient = ReturnType<typeof createApiClient>;
+
+let cached: { client: StudioApiClient; site: string; token: string } | null = null;
+
+export function getApiClient(): StudioApiClient {
   const site = getActiveSite();
   const token = getActiveToken();
   if (!cached || cached.site !== site || cached.token !== token) {
     cached = {
       site,
       token,
-      client: createLumiClient({ url: '', token, siteId: site }),
+      client: createApiClient(token, site),
     };
   }
   return cached.client;
