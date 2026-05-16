@@ -33,20 +33,21 @@ interface FieldInterface<TOptions> {
 }
 ```
 
-Danh sách interface MVP:
-- Text: `input`, `input-multiline`, `wysiwyg`, `markdown`, `code` (monaco), `slug`, `color`.
-- Number: `input-number`, `slider`, `rating`.
-- Choice: `select-dropdown`, `select-radio`, `select-checkbox`, `tags`.
-- Boolean: `toggle`.
-- Date: `datetime`, `date-range`.
-- Relation: `relation-m2o`, `relation-o2m`, `relation-m2m`, `relation-m2a`, `relation-tree`.
-- File: `file`, `file-image`, `file-multiple`.
-- Special: `json-raw`, `geometry-map`, `repeater`, `presentation-divider`, `presentation-notice`.
+Danh sách interface đã implement (được xác định trong quá trình phát triển):
+- **Text & Number**: `input`, `input-multiline`, `input-number`, `wysiwyg`, `markdown`, `code` (monaco), `slug`, `color`, `rating`.
+- **Choice & Boolean**: `select-dropdown`, `tags`, `toggle`.
+- **Date & Time**: `datetime`.
+- **Relation & File**: `relation-m2o`, `relation-o2m`, `relation-m2m`, `file`.
+- **Special**: `json-raw`, `repeater`, `presentation-divider`, `presentation-notice`.
+
+*(Các interface dự kiến khác như `slider`, `date-range`, `geometry-map`, `file-image`... sẽ được bổ sung sau)*
 
 ## 3. Display registry
 
-- `formatted-value`, `raw`, `boolean-icon`, `datetime`, `image`, `labels`, `relation-related-values`, `mustache-template`.
-- Display cho relation hỗ trợ **mustache** sử dụng `displayTemplate` của collection liên quan.
+Danh sách display đã implement:
+- **Cơ bản**: `formatted-value`, `boolean-icon`, `datetime` (formatted-date), `badge`.
+- **Trực quan**: `color-swatch`, `rating-stars`, `labels` (tags-pills).
+- **Nâng cao**: `relation-related-values`, `mustache-template` (hỗ trợ string template nội suy với data).
 
 ## 4. Per-field configuration
 
@@ -99,8 +100,14 @@ JSON định nghĩa field:
 ### 4.4 Per-field versioning
 - `versioned: true` → ghi delta vào `revisions` mỗi lần thay đổi field này. Field không bật sẽ bỏ qua để tiết kiệm.
 
-## 5. Raw mode contract
+## 5. Advanced Content Features & Raw mode
 
+Các tính năng nâng cao đã được tích hợp trong Studio Content:
+- **Raw Toggle Per Field**: Người dùng có thể chuyển đổi linh hoạt giữa giao diện component trực quan và Monaco Editor (raw JSON) trên từng field. Trạng thái edit được bảo lưu kể cả khi JSON invalid.
+- **Bulk Raw Editor**: Cho phép chọn hàng loạt items từ danh sách và chỉnh sửa trực tiếp raw JSON của chúng cùng lúc. Tích hợp tính năng validate trước khi lưu.
+- **Revisions Diff Viewer**: Công cụ so sánh trực quan `delta.before` và `delta.after` của revisions. Hỗ trợ hiển thị highlight thay đổi, lọc hiển thị và chuyển đổi qua lại với chế độ raw.
+
+**Raw mode contract:**
 - Mọi field `rawEnabled !== false` đều render được ở chế độ Raw (xem `raw-data-editing.md`).
 - Interface phải expose hàm `toRaw(value)` và `fromRaw(raw)` để chuyển đổi an toàn (mặc định JSON.stringify/parse).
 
