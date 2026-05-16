@@ -46,6 +46,7 @@ export interface LumiClient<TSchema extends DefaultSchema = DefaultSchema> {
   siteId: string;
   fetcher: typeof fetch;
   rawRequest: <T>(path: string, init?: RequestInit) => Promise<LumiResponse<T>>;
+  request: <Output>(command: (client: LumiClient<TSchema>) => Promise<Output>) => Promise<Output>;
   with: <Extension>(plugin: (client: LumiClient<TSchema>) => Extension) => LumiClient<TSchema> & Extension;
 }
 
@@ -80,6 +81,9 @@ export function createLumiClient<TSchema extends DefaultSchema = DefaultSchema>(
     siteId: opts.siteId,
     fetcher,
     rawRequest,
+    async request<Output>(command: (client: LumiClient<TSchema>) => Promise<Output>): Promise<Output> {
+      return command(this as unknown as LumiClient<TSchema>);
+    },
     with<Extension>(plugin: (client: LumiClient<TSchema>) => Extension) {
       const ext = plugin(this as unknown as LumiClient<TSchema>);
       return Object.assign(this, ext) as unknown as LumiClient<TSchema> & Extension;
