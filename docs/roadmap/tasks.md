@@ -1,10 +1,21 @@
 # Roadmap & Task Breakdown
 
+> **Scope:** Roadmap này dành cho **LumiBase Studio** — admin panel để quản lý data, collections, permissions, v.v.
+>
+> **Consumer app (frontend end-user)** là app riêng (Next.js, static site, v.v.) sử dụng SDK để gọi API từ backend — **không nằm trong roadmap này**.
+>
 > Ngôn ngữ task: ngắn, có thể chuyển thẳng vào issue tracker. Mỗi task có **scope rõ ràng**, **deliverable**, và link tài liệu liên quan.
 
 Quy ước:
-- `[BE]` apps/cms · `[FE]` apps/studio · `[DB]` packages/database · `[SDK]` packages/sdk · `[DOC]` tài liệu · `[OPS]` infra/deploy.
+- `[BE]` apps/cms (Backend API - Hono + Cloudflare Workers)
+- `[FE]` apps/studio (Admin panel - React + Vite)
+- `[DB]` packages/database
+- `[SDK]` packages/sdk (Type-safe client cho cả Studio và consumer apps)
+- `[DOC]` tài liệu
+- `[OPS]` infra/deploy
 - Mỗi PR nên gắn 1 nhánh `feature/<phase>-<short-name>` theo Git hygiene rule.
+
+> **TODO:** Thêm phase/section cho Consumer app demo (Next.js example) để showcase SDK usage cho end-user frontend.
 
 ---
 
