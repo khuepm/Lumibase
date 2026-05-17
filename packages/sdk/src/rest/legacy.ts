@@ -8,6 +8,12 @@ import {
   ListItemsResponse,
   RevisionRow,
   DefaultSchema,
+  RoleResource,
+  PolicyResource,
+  PermissionRow,
+  PermissionBundle,
+  PermissionCheckResult,
+  PermissionAction,
 } from "../types";
 
 export function legacyRest() {
@@ -25,7 +31,8 @@ export function legacyRest() {
           method: "PATCH",
           body: JSON.stringify(patch),
         }),
-      deleteCollection: (name: string) => client.rawRequest<null>(`/api/v1/collections/${name}`, { method: "DELETE" }),
+      deleteCollection: (name: string) =>
+        client.rawRequest<null>(`/api/v1/collections/${name}`, { method: "DELETE" }),
       listFields: (collectionName: string) =>
         client.rawRequest<FieldResource[]>(`/api/v1/collections/${collectionName}/fields`),
       upsertField: (
@@ -38,14 +45,17 @@ export function legacyRest() {
           body: JSON.stringify(input),
         }),
       deleteField: (collectionName: string, fieldName: string) =>
-        client.rawRequest<null>(`/api/v1/collections/${collectionName}/fields/${fieldName}`, { method: "DELETE" }),
+        client.rawRequest<null>(`/api/v1/collections/${collectionName}/fields/${fieldName}`, {
+          method: "DELETE",
+        }),
       listRelations: () => client.rawRequest<RelationResource[]>("/api/v1/relations"),
       createRelation: (input: Omit<RelationResource, "id" | "siteId">) =>
         client.rawRequest<RelationResource>("/api/v1/relations", {
           method: "POST",
           body: JSON.stringify(input),
         }),
-      deleteRelation: (id: string) => client.rawRequest<null>(`/api/v1/relations/${id}`, { method: "DELETE" }),
+      deleteRelation: (id: string) =>
+        client.rawRequest<null>(`/api/v1/relations/${id}`, { method: "DELETE" }),
       diff: (name: string, proposed: Record<string, unknown>) =>
         client.rawRequest<unknown>("/api/v1/collections/diff", {
           method: "POST",
@@ -102,12 +112,120 @@ export function legacyRest() {
           client.rawRequest<Row>(`${base}/${id}`, { method: "PUT", body: JSON.stringify(input) }),
         delete: (id: string) => client.rawRequest<null>(`${base}/${id}`, { method: "DELETE" }),
         bulk: (op: "create" | "update" | "delete", payload: Array<Record<string, unknown>>) =>
-          client.rawRequest<Row[]>(`${base}/bulk`, { method: "POST", body: JSON.stringify({ op, items: payload }) }),
+          client.rawRequest<Row[]>(`${base}/bulk`, {
+            method: "POST",
+            body: JSON.stringify({ op, items: payload }),
+          }),
         listRevisions: (id: string) => client.rawRequest<RevisionRow[]>(`${base}/${id}/revisions`),
         revertRevision: (id: string, revisionId: string) =>
           client.rawRequest<Row>(`${base}/${id}/revert/${revisionId}`, { method: "POST" }),
       };
     }
+
+    // ---------- Access Control ----------
+
+    type RoleDetail = RoleResource & {
+      policies: Array<{ policyId: string; priority: number }>;
+      users: Array<{ userId: string }>;
+    };
+
+    type PolicyDetail = PolicyResource & { permissions: PermissionRow[] };
+
+    const roles = {
+      list: () => client.rawRequest<RoleResource[]>("/api/v1/roles"),
+      get: (id: string) => client.rawRequest<RoleDetail>(`/api/v1/roles/${id}`),
+      create: (input: {
+        name: string;
+        description?: string;
+        icon?: string;
+        adminAccess?: boolean;
+        appAccess?: boolean;
+      }) => client.rawRequest<RoleResource>("/api/v1/roles", { method: "POST", body: JSON.stringify(input) }),
+      update: (
+        id: string,
+        patch: Partial<{
+          name: string;
+          description: string;
+          icon: string;
+          adminAccess: boolean;
+          appAccess: boolean;
+        }>,
+      ) =>
+        client.rawRequest<RoleResource>(`/api/v1/roles/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/roles/${id}`, { method: "DELETE" }),
+      attachPolicy: (id: string, policyId: string, priority?: number) =>
+        client.rawRequest<{ roleId: string; policyId: string; priority: number }>(
+          `/api/v1/roles/${id}/policies`,
+          { method: "POST", body: JSON.stringify({ policyId, priority }) },
+        ),
+      detachPolicy: (id: string, pid: string) =>
+        client.rawRequest<null>(`/api/v1/roles/${id}/policies/${pid}`, { method: "DELETE" }),
+      assignUser: (id: string, userId: string) =>
+        client.rawRequest<{ userId: string; siteId: string; roleId: string }>(
+          `/api/v1/roles/${id}/users`,
+          { method: "POST", body: JSON.stringify({ userId }) },
+        ),
+      removeUser: (id: string, uid: string) =>
+        client.rawRequest<null>(`/api/v1/roles/${id}/users/${uid}`, { method: "DELETE" }),
+    };
+
+    const policies = {
+      list: () => client.rawRequest<PolicyResource[]>("/api/v1/policies"),
+      get: (id: string) => client.rawRequest<PolicyDetail>(`/api/v1/policies/${id}`),
+      create: (input: { name: string; description?: string; rules?: Record<string, unknown> }) =>
+        client.rawRequest<PolicyResource>("/api/v1/policies", { method: "POST", body: JSON.stringify(input) }),
+      update: (
+        id: string,
+        patch: Partial<{ name: string; description: string; rules: Record<string, unknown> }>,
+      ) =>
+        client.rawRequest<PolicyResource>(`/api/v1/policies/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/policies/${id}`, { method: "DELETE" }),
+      addPermission: (
+        id: string,
+        perm: {
+          collection: string;
+          action: PermissionAction;
+          permissions?: Record<string, unknown>;
+          validation?: Record<string, unknown>;
+          presets?: Record<string, unknown>;
+          fields?: string[];
+        },
+      ) =>
+        client.rawRequest<PermissionRow>(`/api/v1/policies/${id}/permissions`, {
+          method: "POST",
+          body: JSON.stringify(perm),
+        }),
+      updatePermission: (
+        id: string,
+        permId: string,
+        patch: Partial<Omit<PermissionRow, "id" | "siteId" | "policyId">>,
+      ) =>
+        client.rawRequest<PermissionRow>(`/api/v1/policies/${id}/permissions/${permId}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      deletePermission: (id: string, permId: string) =>
+        client.rawRequest<null>(`/api/v1/policies/${id}/permissions/${permId}`, { method: "DELETE" }),
+      attachUser: (id: string, userId: string, priority?: number) =>
+        client.rawRequest<{ userId: string; siteId: string; policyId: string; priority: number }>(
+          `/api/v1/policies/${id}/users`,
+          { method: "POST", body: JSON.stringify({ userId, priority }) },
+        ),
+      detachUser: (id: string, userId: string) =>
+        client.rawRequest<null>(`/api/v1/policies/${id}/users/${userId}`, { method: "DELETE" }),
+    };
+
+    const permissions = {
+      me: () => client.rawRequest<PermissionBundle>("/api/v1/permissions/me"),
+      check: (collection: string, action: PermissionAction, item?: Record<string, unknown>) =>
+        client.rawRequest<PermissionCheckResult>("/api/v1/permissions/check", {
+          method: "POST",
+          body: JSON.stringify({ collection, action, item }),
+        }),
+    };
 
     return {
       schema,
@@ -121,6 +239,7 @@ export function legacyRest() {
             siteId: string;
           }>("/api/v1/auth/me"),
       },
+      access: { roles, policies, permissions },
       // Phantom type witness
       _schemaType: undefined as unknown as TSchema,
       // Backward compat request method

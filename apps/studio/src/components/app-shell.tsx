@@ -15,15 +15,17 @@ interface ModuleDef {
   label: string;
   icon: typeof FileText;
   to: string;
+  /** Path prefix used to detect the active module. Defaults to `to`. */
+  prefix?: string;
 }
 
 const MODULES: ModuleDef[] = [
-  { id: 'content', label: 'Content', icon: FileText, to: '/' },
-  { id: 'files', label: 'Files', icon: Layers, to: '/' },
-  { id: 'users', label: 'Users', icon: Users, to: '/' },
-  { id: 'access', label: 'Access', icon: ShieldCheck, to: '/' },
-  { id: 'data-model', label: 'Data model', icon: Database, to: '/data-model' },
-  { id: 'settings', label: 'Settings', icon: Settings, to: '/' },
+  { id: 'content',    label: 'Content',    icon: FileText,    to: '/' },
+  { id: 'files',      label: 'Files',      icon: Layers,      to: '/' },
+  { id: 'users',      label: 'Users',      icon: Users,       to: '/' },
+  { id: 'access',     label: 'Access',     icon: ShieldCheck, to: '/access/roles', prefix: '/access' },
+  { id: 'data-model', label: 'Data model', icon: Database,    to: '/data-model',   prefix: '/data-model' },
+  { id: 'settings',   label: 'Settings',   icon: Settings,    to: '/' },
 ];
 
 interface AppShellProps {
@@ -36,11 +38,14 @@ interface AppShellProps {
  */
 export function AppShell({ children }: AppShellProps) {
   const { location } = useRouterState();
-  const activeModule = location.pathname.startsWith('/data-model')
-    ? 'data-model'
-    : location.pathname.startsWith('/settings')
-      ? 'settings'
-      : 'content';
+
+  const activeModule = (() => {
+    for (const m of MODULES) {
+      const prefix = m.prefix ?? m.to;
+      if (prefix !== '/' && location.pathname.startsWith(prefix)) return m.id;
+    }
+    return 'content';
+  })();
 
   return (
     <div className="flex h-screen w-screen">
@@ -63,8 +68,8 @@ export function AppShell({ children }: AppShellProps) {
         ))}
       </aside>
 
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b px-4">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b px-4">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold">LumiBase Studio</span>
             <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -72,7 +77,7 @@ export function AppShell({ children }: AppShellProps) {
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
-            Phase 0 skeleton — login &amp; routing land next.
+            Phase C — Permissions &amp; Access
           </div>
         </header>
 

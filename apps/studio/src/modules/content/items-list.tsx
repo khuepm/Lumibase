@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import type { FieldResource } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { usePermissions } from '@/lib/use-permissions';
 import { BulkRawEditor } from './bulk-raw-editor';
 import { resolveDisplay } from './displays/registry';
 import { FilterBuilder, compileFilter, type FilterCondition } from './filter-builder';
@@ -50,11 +51,16 @@ export function ItemsListPage() {
       }),
   });
 
+  const { canReadField, canWrite, isAdmin } = usePermissions();
+
   const fields = fieldsQuery.data ?? [];
-  // Pick at most 5 visible non-hidden fields for the table preview.
+  // Pick at most 5 visible non-hidden fields the current user can read.
   const visibleFields: FieldResource[] = useMemo(
-    () => fields.filter((f) => !f.hidden).slice(0, 5),
-    [fields],
+    () =>
+      fields
+        .filter((f) => !f.hidden && (isAdmin || canReadField(collection, f.name)))
+        .slice(0, 5),
+    [fields, isAdmin, canReadField, collection],
   );
 
   const total = itemsQuery.data?.meta?.total ?? 0;
@@ -93,7 +99,7 @@ export function ItemsListPage() {
             <Filter className="h-3.5 w-3.5" />
             Filters {filters.length > 0 && <span className="text-primary">({filters.length})</span>}
           </button>
-          {selected.size > 0 && (
+          {selected.size > 0 && (isAdmin || canWrite(collection)) && (
             <button
               type="button"
               onClick={() => setShowBulk(true)}

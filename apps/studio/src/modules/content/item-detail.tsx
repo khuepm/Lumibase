@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
-import { ChevronLeft, Save, Trash2 } from 'lucide-react';
+import { ChevronLeft, EyeOff, Save, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { FieldResource, ItemRow } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { usePermissions } from '@/lib/use-permissions';
 import { resolveInterface } from './interfaces/registry';
 import { RawToggle } from './interfaces/raw-toggle';
 import { RevisionsPanel } from './revisions-panel';
@@ -43,10 +44,12 @@ export function ItemDetailPage() {
     }
   }, [itemQuery.data, draft]);
 
+  const { canReadField, canWriteField, isAdmin } = usePermissions();
+
   const fields = fieldsQuery.data ?? [];
   const editable: FieldResource[] = useMemo(
-    () => fields.filter((f) => !f.hidden),
-    [fields],
+    () => fields.filter((f) => !f.hidden && (isAdmin || canReadField(collection, f.name))),
+    [fields, isAdmin, canReadField, collection],
   );
 
   const isDirty = useMemo(() => {
@@ -154,7 +157,7 @@ export function ItemDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_22rem]">
         <section className="rounded-lg border bg-background p-4">
           {tab === 'fields' && (
-            <FieldsTab fields={editable} value={draft} onChange={setDraft} />
+            <FieldsTab fields={editable} value={draft} onChange={setDraft} collection={collection} />
           )}
           {tab === 'revisions' && (
             <RevisionsPanel
@@ -233,16 +236,23 @@ function Meta({ label, value }: { label: string; value: string }) {
  * Renders one editor per field by dispatching to the Interface registry
  * (`resolveInterface`). Each interface owns its own value transform; here we
  * just track the current cell value and patch the parent draft on change.
+ *
+ * Fields the user cannot read are already filtered out before this component.
+ * Fields the user cannot update are rendered read-only (disabled).
  */
 function FieldsTab({
   fields,
   value,
   onChange,
+  collection,
 }: {
   fields: FieldResource[];
   value: Record<string, unknown>;
   onChange: (next: Record<string, unknown>) => void;
+  collection: string;
 }) {
+  const { canWriteField, isAdmin } = usePermissions();
+
   if (fields.length === 0) {
     return <p className="text-sm text-muted-foreground">No editable fields.</p>;
   }
@@ -251,19 +261,29 @@ function FieldsTab({
       {fields.map((f) => {
         const Interface = resolveInterface(f);
         const cellValue = value?.[f.name];
-        const setCell = (next: unknown) => onChange({ ...value, [f.name]: next });
+        const writable = isAdmin || canWriteField(collection, f.name);
+        const setCell = writable
+          ? (next: unknown) => onChange({ ...value, [f.name]: next })
+          : () => {};
         return (
-          <div key={f.id}>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          <div key={f.id} className={cn(!writable && 'opacity-60')}>
+            <label className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
               {f.name}
-              {f.required && <span className="ml-1 text-destructive">*</span>}
-              <span className="ml-2 text-[10px] uppercase">
+              {f.required && <span className="text-destructive">*</span>}
+              <span className="ml-1 text-[10px] uppercase">
                 {f.interface || f.type}
               </span>
+              {!writable && (
+                <span className="ml-auto flex items-center gap-0.5 text-[10px] text-amber-600">
+                  <EyeOff className="h-2.5 w-2.5" /> read-only
+                </span>
+              )}
             </label>
-            <RawToggle value={cellValue} onChange={setCell}>
-              <Interface field={f} value={cellValue} onChange={setCell} />
-            </RawToggle>
+            <div className={cn(!writable && 'pointer-events-none')}>
+              <RawToggle value={cellValue} onChange={setCell}>
+                <Interface field={f} value={cellValue} onChange={setCell} />
+              </RawToggle>
+            </div>
           </div>
         );
       })}

@@ -3,6 +3,7 @@ import {
   createRoute,
   createRouter,
   Outlet,
+  redirect,
 } from '@tanstack/react-router';
 import { AppShell } from './components/app-shell';
 import { ContentIndexPage } from './modules/content/index-page';
@@ -12,6 +13,9 @@ import { CollectionsListPage } from './modules/data-model/list';
 import { CollectionDetailPage } from './modules/data-model/detail';
 import { CollectionWizardPage } from './modules/data-model/wizard';
 import { DeveloperTypesPage } from './modules/settings/types-page';
+import { RolesPage } from './modules/access/roles-page';
+import { PoliciesPage } from './modules/access/policies-page';
+import { TestSandboxPage } from './modules/access/test-sandbox';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -56,10 +60,37 @@ const dataModelDetailRoute = createRoute({
   path: '/data-model/$name',
   component: CollectionDetailPage,
 });
+
 const settingsTypesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/developer/types',
   component: DeveloperTypesPage,
+});
+
+// ---------- Access Control routes ----------
+
+const accessIndexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/access',
+  beforeLoad: () => { throw redirect({ to: '/access/roles' }); },
+});
+
+const accessRolesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/access/roles',
+  component: RolesPage,
+});
+
+const accessPoliciesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/access/policies',
+  component: PoliciesPage,
+});
+
+const accessSandboxRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/access/sandbox',
+  component: TestSandboxPage,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -70,6 +101,10 @@ const routeTree = rootRoute.addChildren([
   dataModelNewRoute,
   dataModelDetailRoute,
   settingsTypesRoute,
+  accessIndexRoute,
+  accessRolesRoute,
+  accessPoliciesRoute,
+  accessSandboxRoute,
 ]);
 
 export const router = createRouter({ routeTree });

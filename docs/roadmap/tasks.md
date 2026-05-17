@@ -101,14 +101,14 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 - [x] `[BE]` Magic vars `$CURRENT_USER`, `$CURRENT_SITE`, `$CURRENT_ROLE`, `$NOW`, `$IP`, `$HEADERS.*`.
 - [x] `[BE]` Time-bound + IP allow/deny ở policy level.
 - [x] `[BE]` Permission compose rules (xem `features/permissions-rbac.md`).
-- [ ] `[FE]` Module Access Control:
-  - [ ] Roles page (list, create, assign users).
-  - [ ] Policies page (GUI rules + JSON Monaco).
-  - [ ] Permission matrix.
-  - [ ] Test sandbox.
-- [ ] `[FE]` Field-level hide/disable trong form theo `/permissions/me`.
-- [ ] `[FE]` List view hide column nếu không có quyền read field.
-- [ ] `[FE]` Hide/disable bulk action theo permission.
+- [x] `[FE]` Module Access Control:
+  - [x] Roles page (list, create, assign users).
+  - [x] Policies page (GUI rules + JSON Monaco).
+  - [x] Permission matrix.
+  - [x] Test sandbox.
+- [x] `[FE]` Field-level hide/disable trong form theo `/permissions/me`.
+- [x] `[FE]` List view hide column nếu không có quyền read field.
+- [x] `[FE]` Hide/disable bulk action theo permission.
 
 ---
 
