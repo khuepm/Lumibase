@@ -102,3 +102,82 @@ export interface ListItemsResponse<
   data: ItemRow<T>[];
   meta: { total: number; limit: number; offset: number };
 }
+
+/* ---------------- Access (Phase C) ---------------- */
+
+export type PermissionAction =
+  | "create"
+  | "read"
+  | "update"
+  | "delete"
+  | "share";
+
+export interface RoleResource {
+  id: string;
+  siteId: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  adminAccess: boolean;
+  appAccess: boolean;
+  createdAt?: string;
+}
+
+export interface RoleDetail extends RoleResource {
+  policies: Array<{ policyId: string; priority: number }>;
+  users: Array<{ userId: string }>;
+}
+
+export interface PolicyResource {
+  id: string;
+  siteId: string;
+  name: string;
+  description: string | null;
+  /** Top-level guardrails: time window, IP allow/deny. */
+  rules: Record<string, unknown>;
+  createdAt?: string;
+}
+
+export interface PermissionRow {
+  id: string;
+  siteId: string;
+  policyId: string;
+  collection: string;
+  action: PermissionAction;
+  permissions: Record<string, unknown>;
+  validation: Record<string, unknown>;
+  presets: Record<string, unknown>;
+  fields: string[];
+}
+
+export interface PolicyDetail extends PolicyResource {
+  permissions: PermissionRow[];
+}
+
+export interface CompiledPermission {
+  collection: string;
+  action: PermissionAction;
+  rule: Record<string, unknown> | null;
+  fields: string[];
+  presets: Record<string, unknown>;
+  validation: Record<string, unknown>;
+}
+
+export interface PermissionBundle {
+  admin: boolean;
+  byKey: Record<string, CompiledPermission>;
+  roles: Array<{
+    id: string;
+    name: string;
+    adminAccess: boolean;
+    appAccess: boolean;
+  }>;
+}
+
+export interface PermissionCheckResult {
+  allowed: boolean;
+  reason: string | null;
+  fields: string[];
+  rule?: Record<string, unknown> | null;
+  presets?: Record<string, unknown>;
+}

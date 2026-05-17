@@ -121,6 +121,71 @@ components:
         width: { type: string, enum: [half, full, fill] }
         group: { type: string, nullable: true }
         sortOrder: { type: integer }
+    Role:
+      type: object
+      required: [id, siteId, name]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+        adminAccess: { type: boolean }
+        appAccess: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    Policy:
+      type: object
+      required: [id, siteId, name]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        rules: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    PermissionRow:
+      type: object
+      required: [id, policyId, collection, action]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        policyId: { type: string }
+        collection: { type: string }
+        action: { type: string, enum: [create, read, update, delete, share] }
+        permissions: { type: object, additionalProperties: true }
+        validation: { type: object, additionalProperties: true }
+        presets: { type: object, additionalProperties: true }
+        fields:
+          type: array
+          items: { type: string }
+    PermissionBundle:
+      type: object
+      required: [admin, byKey, roles]
+      properties:
+        admin: { type: boolean }
+        byKey:
+          type: object
+          additionalProperties: { type: object, additionalProperties: true }
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              adminAccess: { type: boolean }
+              appAccess: { type: boolean }
+    PermissionCheckResult:
+      type: object
+      required: [allowed, fields]
+      properties:
+        allowed: { type: boolean }
+        reason: { type: string, nullable: true }
+        fields:
+          type: array
+          items: { type: string }
+        rule: { type: object, nullable: true, additionalProperties: true }
+        presets: { type: object, additionalProperties: true }
 
 paths:
   /utils/health:
@@ -536,3 +601,222 @@ paths:
                 template: { type: string }
                 data: { type: object }
       responses: { '200': { description: OK } }
+  /roles:
+    parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+    get:
+      summary: List roles in the active site
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Role' }
+    post:
+      summary: Create a role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Role' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Role' }
+  /roles/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Get role detail (incl. attached policies + members)
+      responses: { '200': { description: OK } }
+    patch:
+      summary: Update role metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Role' }
+      responses: { '200': { description: OK } }
+    delete:
+      summary: Delete role
+      responses: { '204': { description: Deleted } }
+  /roles/{id}/policies:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Attach a policy to the role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [policyId]
+              properties:
+                policyId: { type: string }
+                priority: { type: integer }
+      responses: { '201': { description: Attached } }
+  /roles/{id}/policies/{policyId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: policyId, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: Detach a policy from the role
+      responses: { '204': { description: Detached } }
+  /roles/{id}/users:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Assign role to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+      responses: { '201': { description: Assigned } }
+  /roles/{id}/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: userId, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: Remove role from user
+      responses: { '204': { description: Removed } }
+  /policies:
+    parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+    get:
+      summary: List policies in the active site
+      responses: { '200': { description: OK } }
+    post:
+      summary: Create a policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Policy' }
+      responses: { '201': { description: Created } }
+  /policies/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Get policy detail (incl. permission rows)
+      responses: { '200': { description: OK } }
+    patch:
+      summary: Update policy metadata or guardrails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Policy' }
+      responses: { '200': { description: OK } }
+    delete:
+      summary: Delete policy
+      responses: { '204': { description: Deleted } }
+  /policies/{id}/permissions:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Add a permission row to the policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermissionRow' }
+      responses: { '201': { description: Created } }
+  /policies/{id}/permissions/{permId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: permId, in: path, required: true, schema: { type: string } }
+    patch:
+      summary: Update a permission row
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermissionRow' }
+      responses: { '200': { description: OK } }
+    delete:
+      summary: Delete a permission row
+      responses: { '204': { description: Deleted } }
+  /policies/{id}/users:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Attach policy directly to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+                priority: { type: integer }
+      responses: { '201': { description: Attached } }
+  /policies/{id}/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteHeader'
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: userId, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: Detach policy from a user
+      responses: { '204': { description: Detached } }
+  /permissions/me:
+    parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+    get:
+      summary: Compiled permission bundle for the active principal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PermissionBundle' }
+  /permissions/check:
+    parameters: [{ $ref: '#/components/parameters/SiteHeader' }]
+    post:
+      summary: Evaluate (collection, action, item) and return the verdict + trace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [collection, action]
+              properties:
+                collection: { type: string }
+                action: { type: string, enum: [create, read, update, delete, share] }
+                item: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PermissionCheckResult' }

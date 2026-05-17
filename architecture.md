@@ -43,6 +43,7 @@ Studio/Web ◄──WSS──── apps/cms /realtime
 - Permission cache là global state quan trọng → bắt buộc invalidate qua KV write + WS broadcast `permissions.changed`.
 - Drizzle helper `scopeSite(siteId)` là tight contract; mọi service phải dùng để tránh leak cross-tenant.
 - Tránh global mutable singleton trong Worker; mọi context truyền qua Hono `c.set/get`.
+- Studio gọi `usePermissions()` (`apps/studio/src/lib/use-permissions.ts`) để hydrate `/permissions/me`; module **Access Control** (`apps/studio/src/modules/access/`) quản lý Roles, Policies, Permission Matrix, Test Sandbox. Hook là single source of truth cho UI gating (column hide, field disable, bulk action lock) — đừng fork logic ở chỗ khác.
 
 ## Update policy
 

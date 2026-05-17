@@ -21,7 +21,7 @@ const MODULES: ModuleDef[] = [
   { id: 'content', label: 'Content', icon: FileText, to: '/' },
   { id: 'files', label: 'Files', icon: Layers, to: '/' },
   { id: 'users', label: 'Users', icon: Users, to: '/' },
-  { id: 'access', label: 'Access', icon: ShieldCheck, to: '/' },
+  { id: 'access', label: 'Access', icon: ShieldCheck, to: '/access' },
   { id: 'data-model', label: 'Data model', icon: Database, to: '/data-model' },
   { id: 'settings', label: 'Settings', icon: Settings, to: '/' },
 ];
@@ -40,7 +40,9 @@ export function AppShell({ children }: AppShellProps) {
     ? 'data-model'
     : location.pathname.startsWith('/settings')
       ? 'settings'
-      : 'content';
+      : location.pathname.startsWith('/access')
+        ? 'access'
+        : 'content';
 
   return (
     <div className="flex h-screen w-screen">
