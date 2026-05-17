@@ -23,6 +23,7 @@ import { DeveloperTypesPage } from './modules/settings/types-page';
 import { TranslationsPage } from './modules/translations';
 import { WebhooksPage } from './modules/settings/webhooks-page';
 import { ActivityPage } from './modules/settings/activity-page';
+import { ExtensionsPage } from './modules/settings/extensions-page';
 import { UsersLayout } from './modules/users/layout';
 import { TeamsPage } from './modules/users/teams-page';
 import { UsersPage } from './modules/users/users-page';
@@ -103,6 +104,12 @@ const activityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/activity',
   component: ActivityPage,
+});
+
+const extensionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/extensions',
+  component: ExtensionsPage,
 });
 
 const usersRoute = createRoute({
@@ -191,6 +198,7 @@ const routeTree = rootRoute.addChildren([
   translationsRoute,
   webhooksRoute,
   activityRoute,
+  extensionsRoute,
   usersRoute.addChildren([usersIndexRoute, usersTeamsRoute]),
   accessRoute.addChildren([
     accessIndexRoute,

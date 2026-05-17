@@ -297,3 +297,17 @@ export interface ActivityResource {
   payload: Record<string, unknown>;
   createdAt: string;
 }
+
+export interface ExtensionResource {
+  id: string;
+  siteId: string | null;
+  name: string;
+  version: string;
+  type: string;
+  enabled: boolean;
+  bundleUrl: string;
+  manifest: Record<string, unknown>;
+  capabilities: string[];
+  installedBy: string | null;
+  installedAt: string;
+}

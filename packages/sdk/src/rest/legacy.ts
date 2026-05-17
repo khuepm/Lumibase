@@ -26,6 +26,7 @@ import {
   FileResource,
   WebhookResource,
   ActivityResource,
+  ExtensionResource,
 } from "../types";
 
 export function legacyRest() {
@@ -467,6 +468,21 @@ export function legacyRest() {
       },
     };
 
+    const extensions = {
+      list: () => client.rawRequest<ExtensionResource[]>("/api/v1/extensions"),
+      create: (input: Record<string, unknown>) =>
+        client.rawRequest<ExtensionResource>("/api/v1/extensions", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: Record<string, unknown>) =>
+        client.rawRequest<ExtensionResource>(`/api/v1/extensions/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/extensions/${id}`, { method: "DELETE" }),
+    };
+
     return {
       schema,
       items,
@@ -482,10 +498,11 @@ export function legacyRest() {
       files,
       webhooks,
       activity,
+      extensions,
       realtime: {
         connect: (siteId: string) => {
           // This is a stub for the realtime client.
-          const wsUrl = client.baseUrl.replace(/^http/, 'ws') + '/api/v1/realtime?siteId=' + siteId;
+          const wsUrl = client.url.replace(/^http/, 'ws') + '/api/v1/realtime?siteId=' + siteId;
           const ws = new WebSocket(wsUrl);
           return ws;
         }

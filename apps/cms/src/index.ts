@@ -10,6 +10,7 @@ import { activityRouter } from './routes/activity';
 import { authRouter } from './routes/auth';
 import { collectionsRouter } from './routes/collections';
 import { deliverRouter } from './routes/deliver';
+import { extensionsRouter } from './routes/extensions';
 import { filesRouter } from './routes/files';
 import { itemsRouter } from './routes/items';
 import { permissionsRouter } from './routes/permissions';
@@ -78,6 +79,7 @@ api.route('/files', filesRouter);
 api.route('/webhooks', webhooksRouter);
 api.route('/activity', activityRouter);
 api.route('/realtime', realtimeRouter);
+api.route('/extensions', extensionsRouter);
 
 app.route('/api/v1', api);
 
