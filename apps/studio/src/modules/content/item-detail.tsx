@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
-import { ChevronLeft, Save, Trash2 } from 'lucide-react';
+import { ChevronLeft, Lock, Save, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { FieldResource, ItemRow } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { usePermissions, type PermissionHelpers } from '@/lib/use-permissions';
 import { resolveInterface } from './interfaces/registry';
 import { RawToggle } from './interfaces/raw-toggle';
 import { RevisionsPanel } from './revisions-panel';
@@ -22,9 +23,14 @@ export function ItemDetailPage() {
   const client = getApiClient();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const perms = usePermissions();
 
   const [tab, setTab] = useState<Tab>('fields');
   const [draft, setDraft] = useState<Record<string, unknown> | null>(null);
+
+  const canRead = perms.can(collection, 'read');
+  const canUpdate = perms.can(collection, 'update');
+  const canDelete = perms.can(collection, 'delete');
 
   const fieldsQuery = useQuery({
     queryKey: ['fields', collection],
@@ -34,6 +40,7 @@ export function ItemDetailPage() {
   const itemQuery = useQuery({
     queryKey: ['item', collection, id],
     queryFn: async () => (await client.items(collection as never).detail(id)).data as ItemRow,
+    enabled: !perms.isLoading && canRead,
   });
 
   // Hydrate draft from server data once.
@@ -44,9 +51,14 @@ export function ItemDetailPage() {
   }, [itemQuery.data, draft]);
 
   const fields = fieldsQuery.data ?? [];
+  // Fields the user can read at all — anything else is invisible (server
+  // strips it from the payload, but we'd render an empty input otherwise).
   const editable: FieldResource[] = useMemo(
-    () => fields.filter((f) => !f.hidden),
-    [fields],
+    () =>
+      fields
+        .filter((f) => !f.hidden)
+        .filter((f) => perms.fieldAllowed(collection, 'read', f.name)),
+    [fields, perms, collection],
   );
 
   const isDirty = useMemo(() => {
@@ -76,6 +88,16 @@ export function ItemDetailPage() {
       navigate({ to: '/content/$collection', params: { collection } });
     },
   });
+
+  if (!perms.isLoading && !canRead) {
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+        <Lock className="h-4 w-4" />
+        You do not have <code className="mx-1 rounded bg-background px-1 text-xs">read</code>
+        permission on this collection.
+      </div>
+    );
+  }
 
   if (itemQuery.error) {
     return (
@@ -122,24 +144,31 @@ export function ItemDetailPage() {
           <button
             type="button"
             onClick={() => deleteMutation.mutate()}
-            disabled={deleteMutation.isPending}
-            className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
+            disabled={deleteMutation.isPending || !canDelete}
+            title={canDelete ? undefined : 'You do not have delete permission on this collection.'}
+            className={cn(
+              'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs disabled:opacity-50',
+              canDelete
+                ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
+                : 'cursor-not-allowed border-muted-foreground/20 text-muted-foreground',
+            )}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            {canDelete ? <Trash2 className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
             Delete
           </button>
           <button
             type="button"
             onClick={() => saveMutation.mutate()}
-            disabled={!isDirty || saveMutation.isPending}
+            disabled={!isDirty || saveMutation.isPending || !canUpdate}
+            title={canUpdate ? undefined : 'You do not have update permission on this collection.'}
             className={cn(
               'inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium',
-              isDirty
+              isDirty && canUpdate
                 ? 'bg-primary text-primary-foreground hover:opacity-90'
                 : 'bg-muted text-muted-foreground',
             )}
           >
-            <Save className="h-3.5 w-3.5" />
+            {canUpdate ? <Save className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
             {saveMutation.isPending ? 'Saving…' : isDirty ? 'Save changes' : 'Saved'}
           </button>
         </div>
@@ -154,7 +183,13 @@ export function ItemDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_22rem]">
         <section className="rounded-lg border bg-background p-4">
           {tab === 'fields' && (
-            <FieldsTab fields={editable} value={draft} onChange={setDraft} />
+            <FieldsTab
+              fields={editable}
+              value={draft}
+              onChange={setDraft}
+              collection={collection}
+              perms={perms}
+            />
           )}
           {tab === 'revisions' && (
             <RevisionsPanel
@@ -233,15 +268,23 @@ function Meta({ label, value }: { label: string; value: string }) {
  * Renders one editor per field by dispatching to the Interface registry
  * (`resolveInterface`). Each interface owns its own value transform; here we
  * just track the current cell value and patch the parent draft on change.
+ *
+ * Phase C: fields without `update` permission render disabled (read-only) so
+ * the user sees them but cannot mutate them. Fields without `read` are
+ * filtered upstream in `editable`, so they never reach here.
  */
 function FieldsTab({
   fields,
   value,
   onChange,
+  collection,
+  perms,
 }: {
   fields: FieldResource[];
   value: Record<string, unknown>;
   onChange: (next: Record<string, unknown>) => void;
+  collection: string;
+  perms: PermissionHelpers;
 }) {
   if (fields.length === 0) {
     return <p className="text-sm text-muted-foreground">No editable fields.</p>;
@@ -251,19 +294,28 @@ function FieldsTab({
       {fields.map((f) => {
         const Interface = resolveInterface(f);
         const cellValue = value?.[f.name];
-        const setCell = (next: unknown) => onChange({ ...value, [f.name]: next });
+        const writable = perms.fieldAllowed(collection, 'update', f.name);
+        const setCell = (next: unknown) => {
+          if (!writable) return;
+          onChange({ ...value, [f.name]: next });
+        };
         return (
           <div key={f.id}>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">
-              {f.name}
-              {f.required && <span className="ml-1 text-destructive">*</span>}
-              <span className="ml-2 text-[10px] uppercase">
-                {f.interface || f.type}
-              </span>
+            <label className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <span>{f.name}</span>
+              {f.required && <span className="text-destructive">*</span>}
+              <span className="text-[10px] uppercase">{f.interface || f.type}</span>
+              {!writable && (
+                <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-amber-700">
+                  <Lock className="h-3 w-3" /> read-only
+                </span>
+              )}
             </label>
-            <RawToggle value={cellValue} onChange={setCell}>
-              <Interface field={f} value={cellValue} onChange={setCell} />
-            </RawToggle>
+            <div className={cn(!writable && 'pointer-events-none opacity-70')}>
+              <RawToggle value={cellValue} onChange={setCell}>
+                <Interface field={f} value={cellValue} onChange={setCell} />
+              </RawToggle>
+            </div>
           </div>
         );
       })}

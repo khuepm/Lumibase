@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Code2, Filter, RefreshCw } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Code2, Filter, Lock, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FieldResource } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { usePermissions } from '@/lib/use-permissions';
 import { BulkRawEditor } from './bulk-raw-editor';
 import { resolveDisplay } from './displays/registry';
 import { FilterBuilder, compileFilter, type FilterCondition } from './filter-builder';
@@ -24,6 +25,7 @@ interface SortState {
 export function ItemsListPage() {
   const { collection } = useParams({ from: '/content/$collection' });
   const client = getApiClient();
+  const perms = usePermissions();
 
   const [filters, setFilters] = useState<FilterCondition[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -39,6 +41,9 @@ export function ItemsListPage() {
 
   const filterPayload = useMemo(() => compileFilter(filters), [filters]);
 
+  const canRead = perms.can(collection, 'read');
+  const canUpdate = perms.can(collection, 'update');
+
   const itemsQuery = useQuery({
     queryKey: ['items', collection, filterPayload, sort, page],
     queryFn: () =>
@@ -48,13 +53,26 @@ export function ItemsListPage() {
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
       }),
+    enabled: !perms.isLoading && canRead,
   });
 
   const fields = fieldsQuery.data ?? [];
-  // Pick at most 5 visible non-hidden fields for the table preview.
+  // Pick at most 5 visible non-hidden fields for the table preview AND drop
+  // fields the principal cannot read (server already strips them, but we hide
+  // the columns proactively so headers/sorts don't promise data we can't show).
   const visibleFields: FieldResource[] = useMemo(
-    () => fields.filter((f) => !f.hidden).slice(0, 5),
-    [fields],
+    () =>
+      fields
+        .filter((f) => !f.hidden)
+        .filter((f) => perms.fieldAllowed(collection, 'read', f.name))
+        .slice(0, 5),
+    [fields, perms, collection],
+  );
+
+  // Filter builder should only offer fields the user can read.
+  const filterableFields = useMemo(
+    () => fields.filter((f) => perms.fieldAllowed(collection, 'read', f.name)),
+    [fields, perms, collection],
   );
 
   const total = itemsQuery.data?.meta?.total ?? 0;
@@ -96,10 +114,17 @@ export function ItemsListPage() {
           {selected.size > 0 && (
             <button
               type="button"
-              onClick={() => setShowBulk(true)}
-              className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary/5 px-2 py-1 text-xs text-primary"
+              onClick={() => canUpdate && setShowBulk(true)}
+              disabled={!canUpdate}
+              title={canUpdate ? undefined : 'You do not have update permission on this collection.'}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs',
+                canUpdate
+                  ? 'border-primary bg-primary/5 text-primary'
+                  : 'cursor-not-allowed border-muted-foreground/20 text-muted-foreground',
+              )}
             >
-              <Code2 className="h-3.5 w-3.5" />
+              {canUpdate ? <Code2 className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
               Edit raw ({selected.size})
             </button>
           )}
@@ -117,13 +142,21 @@ export function ItemsListPage() {
       {showFilters && (
         <div className="rounded-lg border bg-muted/20 p-3">
           <FilterBuilder
-            fields={fields}
+            fields={filterableFields}
             value={filters}
             onChange={(next) => {
               setFilters(next);
               setPage(0);
             }}
           />
+        </div>
+      )}
+
+      {!perms.isLoading && !canRead && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <Lock className="h-4 w-4" />
+          You do not have <code className="mx-1 rounded bg-background px-1 text-xs">read</code>
+          permission on this collection.
         </div>
       )}
 

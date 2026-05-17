@@ -5,12 +5,10 @@
 **⚡ Edge-Native Headless CMS for Modern Web Development**
 
 [![GitHub Stars](https://img.shields.io/github/stars/khuepm/lumibase?style=social)](https://github.com/khuepm/lumibase)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/khuepm)](https://github.com/sponsors/khuepm)
+<!-- [![GitHub Sponsors](https://img.shields.io/github/sponsors/khuepm)](https://github.com/sponsors/khuepm) -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/khuepm/lumibase/blob/main/LICENSE)
 
-**Sponsor us to get exclusive AI Skills documentation for building production-ready applications and practical marketing strategies!** 🎯
-
-[🚀 Sponsor on GitHub](https://github.com/sponsors/khuepm) • [📖 Documentation](https://docs.lumibase.dev) • [💬 Community](https://github.com/khuepm/lumibase/discussions)
+[ Documentation](https://docs.lumibase.dev) • [💬 Community](https://github.com/khuepm/lumibase/discussions)
 
 </div>
 
@@ -61,6 +59,7 @@ The Studio placeholder dashboard pings `/api/v1/utils/health` to verify the wire
 
 ---
 
+<!--
 ## 🎁 Sponsorship Benefits
 
 Support LumiBase development and get **exclusive AI Skills documentation** to accelerate your application development and marketing success!
@@ -100,6 +99,7 @@ Includes everything in Hobby tier plus:
 - Custom contracts and invoicing
 
 [🎯 Become a Sponsor](https://github.com/sponsors/khuepm) and unlock these exclusive resources!
+-->
 
 ## Core Features
 
