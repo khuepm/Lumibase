@@ -114,7 +114,7 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 
 ## Phase C2 — Presets, Bookmarks, Translations cơ bản (tuần 11-12)
 
-- [ ] `[DB]` Bảng `presets`, `translations`.
+- [x] `[DB]` Bảng `presets`, `translations` (đã có trong migration `0000_acoustic_nighthawk.sql`, schema `packages/database/src/schema/platform.ts`).
 - [ ] `[BE]` CRUD `/presets`, scope resolution (user > role > site).
 - [ ] `[BE]` CRUD `/translations` (namespace `ui`, `field`, `content`).
 - [ ] `[BE]` Locale settings (`settings.locales.*`).
