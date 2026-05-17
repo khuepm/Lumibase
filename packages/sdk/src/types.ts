@@ -181,3 +181,41 @@ export interface PermissionCheckResult {
   rule?: Record<string, unknown> | null;
   presets?: Record<string, unknown>;
 }
+
+export interface PresetResource {
+  id: string;
+  siteId: string;
+  bookmark: string | null;
+  collection: string;
+  userId: string | null;
+  roleId: string | null;
+  layout: string;
+  layoutQuery: Record<string, unknown>;
+  layoutOptions: Record<string, unknown>;
+  search: string | null;
+  filter: Record<string, unknown>;
+  icon: string | null;
+  color: string | null;
+  refreshInterval: number;
+  createdAt: string;
+}
+
+export interface TranslationResource {
+  id: string;
+  siteId: string;
+  language: string;
+  namespace: string;
+  key: string;
+  value: string;
+  status: string;
+  updatedAt: string;
+}
+
+export interface SettingResource {
+  id: string;
+  siteId: string;
+  key: string;
+  value: Record<string, unknown>;
+  scope: string;
+  updatedAt: string;
+}

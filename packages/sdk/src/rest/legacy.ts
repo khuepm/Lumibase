@@ -16,6 +16,9 @@ import {
   PermissionAction,
   PermissionBundle,
   PermissionCheckResult,
+  PresetResource,
+  TranslationResource,
+  SettingResource,
 } from "../types";
 
 export function legacyRest() {
@@ -303,12 +306,66 @@ export function legacyRest() {
         }),
     };
 
+    const presets = {
+      list: (collection?: string) =>
+        client.rawRequest<PresetResource[]>(`/api/v1/presets${collection ? `?collection=${collection}` : ""}`),
+      get: (id: string) => client.rawRequest<PresetResource>(`/api/v1/presets/${id}`),
+      create: (input: Partial<PresetResource> & { collection: string }) =>
+        client.rawRequest<PresetResource>("/api/v1/presets", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: Partial<PresetResource>) =>
+        client.rawRequest<PresetResource>(`/api/v1/presets/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/presets/${id}`, { method: "DELETE" }),
+    };
+
+    const translations = {
+      list: (params?: { namespace?: string; language?: string }) => {
+        const qs = new URLSearchParams();
+        if (params?.namespace) qs.set("namespace", params.namespace);
+        if (params?.language) qs.set("language", params.language);
+        const s = qs.toString();
+        return client.rawRequest<TranslationResource[]>(`/api/v1/translations${s ? `?${s}` : ""}`);
+      },
+      get: (id: string) => client.rawRequest<TranslationResource>(`/api/v1/translations/${id}`),
+      create: (input: Partial<TranslationResource> & { language: string; namespace: string; key: string; value: string }) =>
+        client.rawRequest<TranslationResource>("/api/v1/translations", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: Partial<TranslationResource>) =>
+        client.rawRequest<TranslationResource>(`/api/v1/translations/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/translations/${id}`, { method: "DELETE" }),
+    };
+
+    const settings = {
+      list: (scope?: string) =>
+        client.rawRequest<SettingResource[]>(`/api/v1/settings${scope ? `?scope=${scope}` : ""}`),
+      get: (key: string) => client.rawRequest<SettingResource>(`/api/v1/settings/${key}`),
+      set: (key: string, value: Record<string, unknown>, scope?: string) =>
+        client.rawRequest<SettingResource>("/api/v1/settings", {
+          method: "POST",
+          body: JSON.stringify({ key, value, scope }),
+        }),
+      delete: (key: string) => client.rawRequest<null>(`/api/v1/settings/${key}`, { method: "DELETE" }),
+    };
+
     return {
       schema,
       items,
       roles,
       policies,
       permissions,
+      presets,
+      translations,
+      settings,
       auth: {
         me: () =>
           client.rawRequest<{
