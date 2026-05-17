@@ -1,0 +1,72 @@
+import { createLumiClient, readItems, type ItemRow } from "@lumibase/sdk";
+
+// Khởi tạo client tới CMS (chạy local mặc định port 8787 của Cloudflare worker, hoặc mock)
+const client = createLumiClient({
+  url: process.env.LUMIBASE_URL || "http://127.0.0.1:8787",
+  siteId: "site_demo",
+  token: process.env.LUMIBASE_TOKEN || "dev:studio",
+});
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  let posts: ItemRow[] = [];
+  let errorMsg = null;
+
+  try {
+    // Gọi API thông qua composable command readItems
+    const res = await client.request(readItems("posts", { limit: 5 }));
+    posts = (res as { data: ItemRow[] }).data || [];
+  } catch (err: unknown) {
+    const e = err as Error;
+    errorMsg = e.message || "Failed to fetch posts";
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 text-slate-900 py-12 px-6">
+      <div className="max-w-4xl mx-auto space-y-12">
+        <header className="space-y-4 text-center">
+          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900">Lumibase Consumer App</h1>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            Giao diện Next.js App Router (Consumer frontend) để thử nghiệm Lumibase SDK với mô hình Composable.
+          </p>
+        </header>
+
+        <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold tracking-tight">Dữ liệu từ Collection: &ldquo;posts&rdquo;</h2>
+            <div className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
+              Live
+            </div>
+          </div>
+
+          {errorMsg ? (
+            <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl">
+              <strong className="block mb-1">Lỗi kết nối:</strong> {errorMsg}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
+              <p className="text-slate-500 font-medium">Không tìm thấy bài viết nào hoặc backend chưa chạy.</p>
+              <p className="text-sm text-slate-400 mt-2">Đảm bảo bạn đã khởi động `apps/cms` ở cổng 8787.</p>
+            </div>
+          ) : (
+            <ul className="grid gap-4">
+              {posts.map((post) => (
+                <li key={post.id} className="p-5 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm">
+                  <h3 className="font-bold text-lg">{String(post.data.title || "Bài viết không có tiêu đề")}</h3>
+                  <p className="text-slate-600 mt-2 text-sm line-clamp-2">
+                    {String(post.data.excerpt || JSON.stringify(post.data))}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-slate-400 mt-4 font-mono">
+                    <span>ID: {post.id}</span>
+                    <span>Created: {new Date(post.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

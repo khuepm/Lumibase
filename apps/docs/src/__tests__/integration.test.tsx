@@ -357,7 +357,7 @@ describe('Integration: Search', () => {
     // Click on the first result
     const options = screen.getAllByRole('option');
     await act(async () => {
-      fireEvent.click(options[0]);
+      fireEvent.click(options[0]!);
     });
 
     // Should navigate to the relations page
