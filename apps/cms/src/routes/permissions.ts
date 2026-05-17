@@ -33,7 +33,7 @@ const buildContext = (c: Context<AppEnv>): MagicContext => {
 permissionsRouter.get('/me', async (c) => {
   const service = new PermissionService({
     db: c.get('db'),
-    cache: c.env.CONFIG_CACHE,
+    cache: c.get('runtime').cache,
     ctx: buildContext(c),
   });
   const bundle = await service.bundle();
@@ -53,7 +53,7 @@ permissionsRouter.post('/check', async (c) => {
   }
   const service = new PermissionService({
     db: c.get('db'),
-    cache: c.env.CONFIG_CACHE,
+    cache: c.get('runtime').cache,
     ctx: buildContext(c),
   });
   const perm = await service.canAccess(parsed.data.collection, parsed.data.action);

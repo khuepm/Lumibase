@@ -7,7 +7,7 @@ import {
   type Database,
 } from '@lumibase/database';
 import { and, asc, eq } from 'drizzle-orm';
-import type { KVNamespace } from '@cloudflare/workers-types';
+import type { CacheProvider } from '@lumibase/runtime';
 
 /**
  * SchemaService — owns the no-code collection/field/relation lifecycle.
@@ -134,7 +134,7 @@ const cacheKey = (siteId: string, name: string) => `schema:${siteId}:${name}`;
 export interface SchemaServiceDeps {
   db: Database;
   siteId: string;
-  cache?: KVNamespace;
+  cache?: CacheProvider;
 }
 
 export class SchemaService {
@@ -429,8 +429,8 @@ export class SchemaService {
       })),
     };
     if (this.deps.cache) {
-      await this.deps.cache.put(cacheKey(this.deps.siteId, collectionName), JSON.stringify(compiled), {
-        expirationTtl: 300,
+      await this.deps.cache.set(cacheKey(this.deps.siteId, collectionName), JSON.stringify(compiled), {
+        ttl: 300,
       });
     }
     return compiled;
@@ -439,8 +439,8 @@ export class SchemaService {
   /** SWR-style cache read; falls back to live DB compile on miss. */
   async getCompiled(collectionName: string): Promise<CompiledCollection | null> {
     if (this.deps.cache) {
-      const cached = await this.deps.cache.get(cacheKey(this.deps.siteId, collectionName));
-      if (cached) return JSON.parse(cached) as CompiledCollection;
+      const cached = await this.deps.cache.get<CompiledCollection>(cacheKey(this.deps.siteId, collectionName));
+      if (cached) return cached;
     }
     return this.compile(collectionName);
   }

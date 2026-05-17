@@ -10,7 +10,9 @@ import type { RuntimeContext } from '@lumibase/runtime';
  */
 export interface Bindings {
   HYPERDRIVE?: Hyperdrive;
+  /** @deprecated Use `c.get('runtime').cache` (CacheProvider) instead of accessing KV directly. */
   CONFIG_CACHE?: KVNamespace;
+  /** @deprecated Use `c.get('runtime').storage` (StorageProvider) instead of accessing R2 directly. */
   MEDIA?: R2Bucket;
   LUMIBASE_ENV: string;
   /** Runtime mode: `'cloudflare'` or `'docker'`. Defaults to `'docker'`. */

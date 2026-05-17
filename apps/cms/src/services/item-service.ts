@@ -9,7 +9,7 @@ import {
 import { and, asc, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 import { SchemaService } from './schema-service';
 import { validateItem } from './validation';
-import type { KVNamespace } from '@cloudflare/workers-types';
+import type { CacheProvider } from '@lumibase/runtime';
 import { PermissionService, type PermissionAction } from './permission-service';
 import type { MagicContext } from './permission-dsl';
 import { CryptoService } from './crypto-service';
@@ -79,8 +79,8 @@ export class ItemServiceError extends Error {
 
 export interface ItemServiceDeps {
   db: Database;
-  /** Optional KV cache used by SchemaService for compiled manifests. */
-  cache?: KVNamespace;
+  /** Optional cache used by SchemaService for compiled manifests. */
+  cache?: CacheProvider;
   siteId: string;
   /** Caller user id; written to revisions/activity for audit. */
   userId?: string | null;

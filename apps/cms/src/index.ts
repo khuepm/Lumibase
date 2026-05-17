@@ -4,6 +4,7 @@ import type { AppEnv } from './env';
 import { withAuth } from './middleware/auth';
 import { withDb } from './middleware/db';
 import { withLogger } from './middleware/logger';
+import { withRuntime } from './middleware/runtime';
 import { withTenant } from './middleware/tenant';
 import { authRouter } from './routes/auth';
 import { collectionsRouter } from './routes/collections';
@@ -13,14 +14,20 @@ import { permissionsRouter } from './routes/permissions';
 import { policiesRouter } from './routes/policies';
 import { relationsRouter } from './routes/relations';
 import { rolesRouter } from './routes/roles';
+import { mediaRouter } from './routes/media';
+import { metricsRouter, withMetrics } from './routes/metrics';
+import { searchRouter } from './routes/search';
 import { typegenRouter } from './routes/typegen';
 import { utilsRouter } from './routes/utils';
 
 const app = new Hono<AppEnv>();
 
 // Global middleware. Order matters: logger first so it captures everything;
-// CORS before auth so preflight requests succeed.
+// CORS before auth so preflight requests succeed. Runtime must be available
+// before tenant resolution (which may use the cache).
 app.use('*', withLogger());
+app.use('*', withMetrics());
+app.use('*', withRuntime());
 app.use(
   '*',
   cors({
@@ -33,6 +40,8 @@ app.use(
 
 // Public utility endpoints (no tenant, no auth).
 app.route('/api/v1/utils', utilsRouter);
+// Prometheus metrics endpoint (public, no auth).
+app.route('/metrics', metricsRouter);
 // Liveness alias kept for backwards compatibility.
 app.get('/health', (c) =>
   c.json({ status: 'ok', env: c.env.LUMIBASE_ENV }),
@@ -49,6 +58,8 @@ api.route('/typegen', typegenRouter);
 api.route('/roles', rolesRouter);
 api.route('/policies', policiesRouter);
 api.route('/permissions', permissionsRouter);
+api.route('/search', searchRouter);
+api.route('/media', mediaRouter);
 // Future routers: presets, translations, ...
 
 app.route('/api/v1', api);

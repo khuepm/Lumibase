@@ -51,7 +51,7 @@ const buildService = (c: Context<AppEnv>) => {
     db: c.get('db'),
     siteId: c.get('siteId'),
     userId: auth?.userId ?? null,
-    cache: c.env.CONFIG_CACHE,
+    cache: c.get('runtime').cache,
     permissionCtx: {
       userId: auth?.userId ?? null,
       siteId: c.get('siteId'),

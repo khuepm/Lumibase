@@ -28,6 +28,7 @@
     "hono": "^4.6.5",
     "jose": "^5.9.6",
     "nanoid": "^5.0.7",
+    "prom-client": "^15.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
