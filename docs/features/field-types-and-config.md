@@ -119,8 +119,14 @@ JSON định nghĩa field:
 ### 4.4 Per-field versioning
 - `versioned: true` → ghi delta vào `revisions` mỗi lần thay đổi field này. Field không bật sẽ bỏ qua để tiết kiệm.
 
-## 5. Raw mode contract
+## 5. Advanced Content Features & Raw mode
 
+Các tính năng nâng cao đã được tích hợp trong Studio Content:
+- **Raw Toggle Per Field**: Người dùng có thể chuyển đổi linh hoạt giữa giao diện component trực quan và Monaco Editor (raw JSON) trên từng field. Trạng thái edit được bảo lưu kể cả khi JSON invalid.
+- **Bulk Raw Editor**: Cho phép chọn hàng loạt items từ danh sách và chỉnh sửa trực tiếp raw JSON của chúng cùng lúc. Tích hợp tính năng validate trước khi lưu.
+- **Revisions Diff Viewer**: Công cụ so sánh trực quan `delta.before` và `delta.after` của revisions. Hỗ trợ hiển thị highlight thay đổi, lọc hiển thị và chuyển đổi qua lại với chế độ raw.
+
+**Raw mode contract:**
 - Mọi field `rawEnabled !== false` đều render được ở chế độ Raw (xem `raw-data-editing.md`).
 - Interface phải expose hàm `toRaw(value)` và `fromRaw(raw)` để chuyển đổi an toàn (mặc định JSON.stringify/parse).
 

@@ -12,7 +12,7 @@
 | 4 | Interface registry phần 2 (relation, code, wysiwyg, markdown, file, repeater, presentation) | ✅ Done | `apps/studio/src/modules/content/interfaces/` |
 | 5 | Display registry + Raw toggle + Bulk raw editor | ✅ Done | `apps/studio/src/modules/content/displays/`, `bulk-raw-editor.tsx`, `raw-toggle.tsx` |
 | 6 | Revisions diff viewer + Mustache display | ✅ Done | `apps/studio/src/modules/content/revisions-diff.tsx`, `displays/mustache.tsx` |
-| 7 | Cập nhật docs/features/field-types-and-config.md | ⏳ Pending | `docs/features/field-types-and-config.md` |
+| 7 | Cập nhật docs/features/field-types-and-config.md | ✅ Done | `docs/features/field-types-and-config.md` |
 
 ---
 
@@ -182,10 +182,10 @@
 **Mục tiêu:** Cập nhật documentation để reflect những gì đã implement.
 
 ### Tasks
-- [ ] Cập nhật danh sách interface thực tế (đã implement)
-- [ ] Cập nhật danh sách display thực tế (đã implement)
-- [ ] Thêm note về raw toggle, bulk raw editor, diff viewer
-- [ ] Sync với code hiện tại
+- [x] Cập nhật danh sách interface thực tế (đã implement)
+- [x] Cập nhật danh sách display thực tế (đã implement)
+- [x] Thêm note về raw toggle, bulk raw editor, diff viewer
+- [x] Sync với code hiện tại
 
 ---
 
