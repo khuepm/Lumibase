@@ -1,4 +1,4 @@
-import { createLumiClient, readItems } from "@lumibase/sdk";
+import { createLumiClient, readItems, type ItemRow } from "@lumibase/sdk";
 
 // Khởi tạo client tới CMS (chạy local mặc định port 8787 của Cloudflare worker, hoặc mock)
 const client = createLumiClient({
@@ -10,13 +10,13 @@ const client = createLumiClient({
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  let posts: Record<string, unknown>[] = [];
+  let posts: ItemRow[] = [];
   let errorMsg = null;
 
   try {
     // Gọi API thông qua composable command readItems
     const res = await client.request(readItems("posts", { limit: 5 }));
-    posts = res.data || [];
+    posts = (res as { data: ItemRow[] }).data || [];
   } catch (err: unknown) {
     const e = err as Error;
     errorMsg = e.message || "Failed to fetch posts";
@@ -53,9 +53,9 @@ export default async function Home() {
             <ul className="grid gap-4">
               {posts.map((post) => (
                 <li key={post.id} className="p-5 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm">
-                  <h3 className="font-bold text-lg">{post.data.title || "Bài viết không có tiêu đề"}</h3>
+                  <h3 className="font-bold text-lg">{String(post.data.title || "Bài viết không có tiêu đề")}</h3>
                   <p className="text-slate-600 mt-2 text-sm line-clamp-2">
-                    {post.data.excerpt || JSON.stringify(post.data)}
+                    {String(post.data.excerpt || JSON.stringify(post.data))}
                   </p>
                   <div className="flex items-center gap-4 text-xs text-slate-400 mt-4 font-mono">
                     <span>ID: {post.id}</span>
