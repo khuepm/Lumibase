@@ -77,16 +77,16 @@ Mục tiêu: CRUD generic + đầy đủ interface field + raw mode toàn cục.
 - [x] `[BE]` Validation pipeline (Zod + JSONata) chạy server-side.
 - [x] `[BE]` Conditions evaluator (server + helper xuất sang client).
 - [x] `[BE]` Per-field encryption service (AES-GCM, key Workers Secret).
-- [ ] `[FE]` Content module list view (tabular layout) + filter builder + sort + paginate.
-- [ ] `[FE]` Detail editor + tabs side panel (Revisions, Raw JSON).
-- [ ] `[FE]` Interface registry hoàn chỉnh: text, number, choice, boolean, date, relation (m2o/o2m/m2m), file, json-raw, code, wysiwyg, markdown, slug, color, tags, rating, repeater, presentation.
-- [ ] `[FE]` Display registry: formatted-value, raw, boolean-icon, datetime, image, labels, mustache-template.
-- [ ] `[FE]` Raw toggle component (Monaco) cho mọi interface (xem `features/raw-data-editing.md`).
-- [ ] `[FE]` Bulk raw editor cho toàn item.
-- [ ] `[FE]` Revisions diff viewer.
-- [ ] `[FE]` Mustache display template editor (textarea + autocomplete + live preview).
+- [x] `[FE]` Content module list view (tabular layout) + filter builder + sort + paginate.
+- [x] `[FE]` Detail editor + tabs side panel (Revisions, Raw JSON).
+- [x] `[FE]` Interface registry hoàn chỉnh: text, number, choice, boolean, date, relation (m2o/o2m/m2m), file, json-raw, code, wysiwyg, markdown, slug, color, tags, rating, repeater, presentation.
+- [x] `[FE]` Display registry: formatted-value, raw, boolean-icon, datetime, image, labels, mustache-template.
+- [x] `[FE]` Raw toggle component (Monaco) cho mọi interface (xem `features/raw-data-editing.md`).
+- [x] `[FE]` Bulk raw editor cho toàn item.
+- [x] `[FE]` Revisions diff viewer.
+- [x] `[FE]` Mustache display template editor (textarea + autocomplete + live preview).
 - [x] `[BE]` `POST /utils/render-template` (mustache only Phase B).
-- [ ] `[DOC]` Cập nhật `features/field-types-and-config.md` với danh sách interfaces đã implement.
+- [x] `[DOC]` Cập nhật `features/field-types-and-config.md` với danh sách interfaces đã implement.
 
 ---
 

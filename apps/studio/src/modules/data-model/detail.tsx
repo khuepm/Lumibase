@@ -3,6 +3,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { getApiClient } from '@/lib/api';
+import { DisplayTab } from './display-tab';
 import { FieldsTab } from './fields-tab';
 import { RawJsonTab } from './raw-json-tab';
 
@@ -83,11 +84,10 @@ export function CollectionDetailPage() {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`px-3 py-2 text-sm border-b-2 -mb-px ${
-              tab === id
+            className={`px-3 py-2 text-sm border-b-2 -mb-px ${tab === id
                 ? 'border-primary text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             {label}
           </button>
@@ -96,11 +96,7 @@ export function CollectionDetailPage() {
 
       <section>
         {tab === 'fields' && <FieldsTab collectionName={collection.name} />}
-        {tab === 'display' && (
-          <p className="text-sm text-muted-foreground">
-            Display template editor lands in Phase B.
-          </p>
-        )}
+        {tab === 'display' && <DisplayTab collectionName={collection.name} />}
         {tab === 'archive' && (
           <p className="text-sm text-muted-foreground">
             Archive field: {collection.archiveField || '—'} · value:{' '}

@@ -3,12 +3,16 @@ import { BadgeDisplay } from './badge';
 import { BooleanIconDisplay } from './boolean-icon';
 import { ColorSwatchDisplay } from './color-swatch';
 import { FormattedDateDisplay } from './formatted-date';
+import { FormattedValueDisplay } from './formatted-value';
+import { ImageDisplay } from './image';
+import { LabelsDisplay } from './labels';
 import { MustacheDisplay } from './mustache';
 import { RatingStarsDisplay } from './rating-stars';
+import { RawDisplay } from './raw';
 import { RelationDisplay } from './relation';
 import { TagsPillsDisplay } from './tags-pills';
 import { TextDisplay } from './text';
-import type { DisplayComponent } from './types';
+import { readDisplayKey, type DisplayComponent } from './types';
 
 /**
  * Display registry — name -> read-only renderer for list cells.
@@ -17,6 +21,7 @@ import type { DisplayComponent } from './types';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const REGISTRY: Record<string, DisplayComponent<any>> = {
+  // Phase A starter set.
   text: TextDisplay,
   badge: BadgeDisplay,
   'boolean-icon': BooleanIconDisplay,
@@ -26,6 +31,15 @@ const REGISTRY: Record<string, DisplayComponent<any>> = {
   'rating-stars': RatingStarsDisplay,
   'tags-pills': TagsPillsDisplay,
   mustache: MustacheDisplay,
+
+  // Phase B FE additions — names match `features/field-types-and-config.md`.
+  'formatted-value': FormattedValueDisplay,
+  raw: RawDisplay,
+  image: ImageDisplay,
+  labels: LabelsDisplay,
+  // Aliases so the doc-canonical names resolve too.
+  datetime: FormattedDateDisplay,
+  'mustache-template': MustacheDisplay,
 };
 
 const INTERFACE_TO_DISPLAY: Record<string, string> = {
@@ -47,8 +61,7 @@ const TYPE_TO_DISPLAY: Record<string, string> = {
 };
 
 export function resolveDisplay(field: FieldResource): DisplayComponent<unknown> {
-  const meta = (field as unknown as { meta?: { display?: { name?: string } } }).meta;
-  const explicit = meta?.display?.name;
+  const explicit = readDisplayKey(field);
   const candidate =
     (explicit && REGISTRY[explicit]) ||
     REGISTRY[INTERFACE_TO_DISPLAY[field.interface] ?? ''] ||
@@ -56,5 +69,25 @@ export function resolveDisplay(field: FieldResource): DisplayComponent<unknown> 
     TextDisplay;
   return candidate as DisplayComponent<unknown>;
 }
+
+/**
+ * Display catalogue surfaced in the inspector picker. Keep order stable
+ * so the dropdown is predictable. Aliases are excluded — the canonical
+ * name covers them.
+ */
+export const DISPLAY_CATALOGUE: Array<{ id: string; label: string; hint: string }> = [
+  { id: 'formatted-value', label: 'Formatted value', hint: 'Generic text with prefix/suffix/case/truncate.' },
+  { id: 'raw', label: 'Raw', hint: 'Stringify with no formatting.' },
+  { id: 'badge', label: 'Badge', hint: 'Colored pill keyed by value.' },
+  { id: 'boolean-icon', label: 'Boolean icon', hint: 'Check / cross icon.' },
+  { id: 'datetime', label: 'Datetime', hint: 'Relative / short / ISO date formatting.' },
+  { id: 'color-swatch', label: 'Color swatch', hint: 'Inline color square + hex.' },
+  { id: 'rating-stars', label: 'Rating stars', hint: 'Star row for numeric ratings.' },
+  { id: 'tags-pills', label: 'Tags pills', hint: 'Compact pills for `string[]` values.' },
+  { id: 'labels', label: 'Labels', hint: 'Pills with per-value tone mapping.' },
+  { id: 'image', label: 'Image', hint: 'Thumbnail for file/url values.' },
+  { id: 'relation', label: 'Relation', hint: 'Resolve id → related collection field.' },
+  { id: 'mustache-template', label: 'Mustache template', hint: 'Compose a row template like `{{title}} ({{slug}})`.' },
+];
 
 export const DISPLAY_NAMES = Object.keys(REGISTRY);

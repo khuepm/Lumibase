@@ -48,6 +48,8 @@ export function FieldsTab({ collectionName }: FieldsTabProps) {
         interface: state.interface,
         required: state.required,
         sortOrder: state.sortOrder,
+        display: state.display ?? null,
+        displayOptions: state.displayOptions ?? {},
       });
     },
     onSuccess: () => {
@@ -117,6 +119,8 @@ export function FieldsTab({ collectionName }: FieldsTabProps) {
               interface: 'input',
               required: false,
               sortOrder: fields.length,
+              display: null,
+              displayOptions: {},
             })
           }
           className="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs"
@@ -147,6 +151,10 @@ export function FieldsTab({ collectionName }: FieldsTabProps) {
                     interface: f.interface,
                     required: f.required,
                     sortOrder: f.sortOrder,
+                    display: ((f as unknown as { display?: string | null }).display) ?? null,
+                    displayOptions:
+                      ((f as unknown as { displayOptions?: Record<string, unknown> })
+                        .displayOptions) ?? {},
                   })
                 }
                 onDelete={() => {
@@ -169,6 +177,9 @@ export function FieldsTab({ collectionName }: FieldsTabProps) {
       {editing && (
         <FieldInspector
           state={editing}
+          siblingFields={fields
+            .filter((f) => f.name !== editing.name)
+            .map((f) => ({ name: f.name, type: f.type, interface: f.interface }))}
           onCancel={() => setEditing(null)}
           onSubmit={(state) => upsertMutation.mutate(state)}
           isSubmitting={upsertMutation.isPending}
