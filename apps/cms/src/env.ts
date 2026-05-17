@@ -13,6 +13,8 @@ export interface Bindings {
   CONFIG_CACHE?: KVNamespace;
   MEDIA?: R2Bucket;
   LUMIBASE_ENV: string;
+  /** Runtime mode: `'cloudflare'` or `'docker'`. Defaults to `'docker'`. */
+  LUMIBASE_RUNTIME?: string;
   /** Logto OIDC issuer, e.g. https://auth.lumibase.dev/oidc */
   LOGTO_ISSUER?: string;
   /** Expected `aud` claim, e.g. https://api.lumibase.dev */
