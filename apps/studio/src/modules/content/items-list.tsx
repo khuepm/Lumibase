@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
 import { ArrowDown, ArrowUp, Bookmark, ChevronLeft, ChevronRight, Code2, Filter, Lock, RefreshCw, Save } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -6,6 +6,7 @@ import type { FieldResource, PresetResource } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { usePermissions } from '@/lib/use-permissions';
+import { useRealtimeSubscription } from '@/hooks/use-realtime';
 import { BulkRawEditor } from './bulk-raw-editor';
 import { resolveDisplay } from './displays/registry';
 import { FilterBuilder, compileFilter, type FilterCondition } from './filter-builder';
@@ -33,6 +34,14 @@ export function ItemsListPage() {
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showBulk, setShowBulk] = useState(false);
+  const [liveMode, setLiveMode] = useState(false);
+  const queryClient = useQueryClient();
+
+  useRealtimeSubscription(collection, () => {
+    if (liveMode) {
+      queryClient.invalidateQueries({ queryKey: ['items', collection] });
+    }
+  });
 
   const fieldsQuery = useQuery({
     queryKey: ['fields', collection],
@@ -105,6 +114,17 @@ export function ItemsListPage() {
           <h1 className="text-2xl font-semibold">{collection}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* Live Mode Toggle */}
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground mr-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={liveMode} 
+              onChange={(e) => setLiveMode(e.target.checked)} 
+              className="accent-primary"
+            />
+            Live Mode
+          </label>
+
           {/* Preset Switcher */}
           <div className="flex items-center rounded-md border text-xs">
             <select
