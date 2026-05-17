@@ -16,6 +16,7 @@ import { SlugInterface } from './slug';
 import { TagsInterface } from './tags';
 import { TextInterface, TextMultilineInterface } from './text';
 import { ToggleInterface } from './toggle';
+import { TranslatableText } from './translatable-text';
 import { WysiwygInterface } from './wysiwyg';
 import type { InterfaceComponent } from './types';
 
@@ -55,6 +56,7 @@ const REGISTRY: Record<string, InterfaceComponent<any>> = {
   repeater: RepeaterInterface,
   'presentation-divider': PresentationInterface,
   'presentation-notice': PresentationInterface,
+  'translatable-text': TranslatableText,
 
   // Aliases by underlying type so collections without an explicit interface
   // still get a sensible editor.

@@ -19,6 +19,7 @@ import { CollectionsListPage } from './modules/data-model/list';
 import { CollectionDetailPage } from './modules/data-model/detail';
 import { CollectionWizardPage } from './modules/data-model/wizard';
 import { DeveloperTypesPage } from './modules/settings/types-page';
+import { TranslationsPage } from './modules/translations';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -67,6 +68,12 @@ const settingsTypesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/developer/types',
   component: DeveloperTypesPage,
+});
+
+const translationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/translations',
+  component: TranslationsPage,
 });
 
 const accessRoute = createRoute({
@@ -129,6 +136,7 @@ const routeTree = rootRoute.addChildren([
   dataModelNewRoute,
   dataModelDetailRoute,
   settingsTypesRoute,
+  translationsRoute,
   accessRoute.addChildren([
     accessIndexRoute,
     accessRolesRoute,
