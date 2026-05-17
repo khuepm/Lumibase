@@ -115,13 +115,13 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 ## Phase C2 — Presets, Bookmarks, Translations cơ bản (tuần 11-12)
 
 - [x] `[DB]` Bảng `presets`, `translations` (đã có trong migration `0000_acoustic_nighthawk.sql`, schema `packages/database/src/schema/platform.ts`).
-- [ ] `[BE]` CRUD `/presets`, scope resolution (user > role > site).
-- [ ] `[BE]` CRUD `/translations` (namespace `ui`, `field`, `content`).
-- [ ] `[BE]` Locale settings (`settings.locales.*`).
-- [ ] `[FE]` Preset switcher + save/edit dialog ở list view.
-- [ ] `[FE]` Module Translations (UI strings tab + content tab JSONB).
-- [ ] `[FE]` Interface `translatable-text` (JSONB map locale).
-- [ ] `[FE]` i18n cho Studio UI (react-i18next bind to translations API).
+- [x] `[BE]` CRUD `/presets`, scope resolution (user > role > site).
+- [x] `[BE]` CRUD `/translations` (namespace `ui`, `field`, `content`).
+- [x] `[BE]` Locale settings (`settings.locales.*`).
+- [x] `[FE]` Preset switcher + save/edit dialog ở list view.
+- [x] `[FE]` Module Translations (UI strings tab + content tab JSONB).
+- [x] `[FE]` Interface `translatable-text` (JSONB map locale).
+- [x] `[FE]` i18n cho Studio UI (react-i18next bind to translations API).
 
 ---
 
