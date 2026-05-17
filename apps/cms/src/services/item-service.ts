@@ -9,7 +9,7 @@ import {
 import { and, asc, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 import { SchemaService } from './schema-service';
 import { validateItem } from './validation';
-import type { CacheProvider } from '@lumibase/runtime';
+import type { CacheProvider, SearchProvider, QueueProvider } from '@lumibase/runtime';
 import { PermissionService, type PermissionAction } from './permission-service';
 import type { MagicContext } from './permission-dsl';
 import { CryptoService } from './crypto-service';
@@ -81,6 +81,10 @@ export interface ItemServiceDeps {
   db: Database;
   /** Optional cache used by SchemaService for compiled manifests. */
   cache?: CacheProvider;
+  /** Optional search provider for auto-indexing content on create/update/delete. */
+  search?: SearchProvider;
+  /** Optional queue provider for enqueuing background jobs. */
+  queue?: QueueProvider;
   siteId: string;
   /** Caller user id; written to revisions/activity for audit. */
   userId?: string | null;
@@ -339,6 +343,7 @@ export class ItemService {
     await this.writeRevision(coll.id, row.id, encryptedData, null);
     await this.writeActivity('create', coll.name, row.id, { data: payload.data });
     row.data = await this.processCrypto(collectionName, row.data as Record<string, unknown>, 'decrypt', false);
+    await this.indexItem(collectionName, row.id, row.data as Record<string, unknown>);
     return row;
   }
 
@@ -378,6 +383,7 @@ export class ItemService {
     await this.writeActivity('update', coll.name, id, { patch });
     
     row.data = await this.processCrypto(collectionName, row.data as Record<string, unknown>, 'decrypt', false);
+    await this.indexItem(collectionName, row.id, row.data as Record<string, unknown>);
     return row;
   }
 
@@ -416,6 +422,7 @@ export class ItemService {
         ),
       );
     await this.writeActivity('delete', coll.name, id, {});
+    await this.deindexItem(collectionName, id);
     return { ok: true } as const;
   }
 
@@ -473,6 +480,51 @@ export class ItemService {
   }
 
   // ---------- internals ----------
+
+  /**
+   * Index an item in the search engine after create/update.
+   * Uses QueueProvider to enqueue a `search:index` job on the `content-indexing` queue.
+   * Falls back to direct SearchProvider.index() if queue is unavailable.
+   * Errors are logged but never block the main operation.
+   */
+  private async indexItem(collectionName: string, id: string, data: Record<string, unknown>): Promise<void> {
+    try {
+      if (this.deps.queue) {
+        await this.deps.queue.enqueue('content-indexing', 'search:index', {
+          collection: collectionName,
+          id,
+          data,
+        });
+      } else if (this.deps.search) {
+        await this.deps.search.index(collectionName, [{ id, ...data }]);
+      }
+    } catch (err) {
+      // Search indexing is non-critical — log and continue.
+      console.error('[item-service] search index failed', { collectionName, id, err });
+    }
+  }
+
+  /**
+   * Remove an item from the search index after soft-delete.
+   * Uses QueueProvider to enqueue a `search:remove` job on the `content-indexing` queue.
+   * Falls back to direct SearchProvider.delete() if queue is unavailable.
+   * Errors are logged but never block the main operation.
+   */
+  private async deindexItem(collectionName: string, id: string): Promise<void> {
+    try {
+      if (this.deps.queue) {
+        await this.deps.queue.enqueue('content-indexing', 'search:remove', {
+          collection: collectionName,
+          id,
+        });
+      } else if (this.deps.search) {
+        await this.deps.search.delete(collectionName, [id]);
+      }
+    } catch (err) {
+      // Search de-indexing is non-critical — log and continue.
+      console.error('[item-service] search deindex failed', { collectionName, id, err });
+    }
+  }
 
   private async processCrypto(
     collectionName: string,

@@ -93,6 +93,9 @@ mediaRouter.get('/:key{.+}', async (c) => {
  * POST /media/:key
  * Upload a media asset. The request body is stored as-is.
  * Content-Type header is preserved as metadata.
+ *
+ * For image uploads, a thumbnail generation job is enqueued (fire-and-forget)
+ * to produce predefined sizes (150x150, 300x300, 600x600).
  */
 mediaRouter.post('/:key{.+}', async (c) => {
   const key = c.req.param('key');
@@ -112,6 +115,27 @@ mediaRouter.post('/:key{.+}', async (c) => {
 
     const metadata: Record<string, string> = { contentType };
     await storage.put(key, data, metadata);
+
+    // Fire-and-forget: enqueue thumbnail generation for image uploads
+    if (contentType.startsWith('image/')) {
+      try {
+        const queue = c.get('runtime').queue;
+        if (queue) {
+          queue.enqueue('media-processing', 'generate-thumbnails', {
+            key,
+            sizes: [
+              { width: 150, height: 150 },
+              { width: 300, height: 300 },
+              { width: 600, height: 600 },
+            ],
+          }).catch((err) => {
+            console.warn('[media] failed to enqueue thumbnail generation', err);
+          });
+        }
+      } catch (err) {
+        console.warn('[media] queue unavailable for thumbnail generation', err);
+      }
+    }
 
     return c.json({ data: { key, size: data.byteLength, contentType } }, 201);
   } catch (err) {

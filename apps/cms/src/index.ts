@@ -14,6 +14,7 @@ import { permissionsRouter } from './routes/permissions';
 import { policiesRouter } from './routes/policies';
 import { relationsRouter } from './routes/relations';
 import { rolesRouter } from './routes/roles';
+import { healthRouter } from './routes/health';
 import { mediaRouter } from './routes/media';
 import { metricsRouter, withMetrics } from './routes/metrics';
 import { searchRouter } from './routes/search';
@@ -42,10 +43,8 @@ app.use(
 app.route('/api/v1/utils', utilsRouter);
 // Prometheus metrics endpoint (public, no auth).
 app.route('/metrics', metricsRouter);
-// Liveness alias kept for backwards compatibility.
-app.get('/health', (c) =>
-  c.json({ status: 'ok', env: c.env.LUMIBASE_ENV }),
-);
+// Comprehensive health check — tests DB, cache, search, storage, queue connectivity.
+app.route('/health', healthRouter);
 
 // Authenticated + tenant-scoped surface.
 const api = new Hono<AppEnv>();
