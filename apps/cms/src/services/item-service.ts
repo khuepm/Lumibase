@@ -372,6 +372,8 @@ export class ItemService {
       .where(eq(items.id, id))
       .returning();
 
+    if (!row) throw new ItemServiceError('UPDATE_FAILED', 'Failed to update item.');
+
     await this.writeRevision(coll.id, id, encryptedMerged, rawRow.data as Record<string, unknown>);
     await this.writeActivity('update', coll.name, id, { patch });
     

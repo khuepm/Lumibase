@@ -33,7 +33,7 @@ describe('search service', () => {
     const results = search('authentication');
     expect(results.length).toBeGreaterThan(0);
 
-    const result = results[0];
+    const result = results[0]!;
     expect(result).toHaveProperty('slug');
     expect(result).toHaveProperty('title');
     expect(result).toHaveProperty('snippet');
@@ -46,7 +46,7 @@ describe('search service', () => {
     const results = search('relations');
     expect(results.length).toBeGreaterThan(0);
     // The doc with "Relations" as title should rank higher
-    expect(results[0].slug).toBe('features/relations');
+    expect(results[0]!.slug).toBe('features/relations');
   });
 
   it('supports prefix search', () => {
