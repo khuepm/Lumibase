@@ -18,8 +18,14 @@ import { ItemsListPage } from './modules/content/items-list';
 import { CollectionsListPage } from './modules/data-model/list';
 import { CollectionDetailPage } from './modules/data-model/detail';
 import { CollectionWizardPage } from './modules/data-model/wizard';
+import { FilesPage } from './modules/files';
 import { DeveloperTypesPage } from './modules/settings/types-page';
 import { TranslationsPage } from './modules/translations';
+import { WebhooksPage } from './modules/settings/webhooks-page';
+import { ActivityPage } from './modules/settings/activity-page';
+import { UsersLayout } from './modules/users/layout';
+import { TeamsPage } from './modules/users/teams-page';
+import { UsersPage } from './modules/users/users-page';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -64,6 +70,17 @@ const dataModelDetailRoute = createRoute({
   path: '/data-model/$name',
   component: CollectionDetailPage,
 });
+
+const filesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/files',
+  component: () => (
+    <div className="p-6">
+      <FilesPage />
+    </div>
+  ),
+});
+
 const settingsTypesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/developer/types',
@@ -74,6 +91,40 @@ const translationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/translations',
   component: TranslationsPage,
+});
+
+const webhooksRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/webhooks',
+  component: WebhooksPage,
+});
+
+const activityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/activity',
+  component: ActivityPage,
+});
+
+const usersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/users',
+  component: () => (
+    <UsersLayout>
+      <Outlet />
+    </UsersLayout>
+  ),
+});
+
+const usersIndexRoute = createRoute({
+  getParentRoute: () => usersRoute,
+  path: '/',
+  component: UsersPage,
+});
+
+const usersTeamsRoute = createRoute({
+  getParentRoute: () => usersRoute,
+  path: '/teams',
+  component: TeamsPage,
 });
 
 const accessRoute = createRoute({
@@ -135,8 +186,12 @@ const routeTree = rootRoute.addChildren([
   dataModelRoute,
   dataModelNewRoute,
   dataModelDetailRoute,
+  filesRoute,
   settingsTypesRoute,
   translationsRoute,
+  webhooksRoute,
+  activityRoute,
+  usersRoute.addChildren([usersIndexRoute, usersTeamsRoute]),
   accessRoute.addChildren([
     accessIndexRoute,
     accessRolesRoute,

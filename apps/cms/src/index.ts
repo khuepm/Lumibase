@@ -6,13 +6,16 @@ import { withDb } from './middleware/db';
 import { withLogger } from './middleware/logger';
 import { withRuntime } from './middleware/runtime';
 import { withTenant } from './middleware/tenant';
+import { activityRouter } from './routes/activity';
 import { authRouter } from './routes/auth';
 import { collectionsRouter } from './routes/collections';
 import { deliverRouter } from './routes/deliver';
+import { filesRouter } from './routes/files';
 import { itemsRouter } from './routes/items';
 import { permissionsRouter } from './routes/permissions';
 import { policiesRouter } from './routes/policies';
 import { presetsRouter } from './routes/presets';
+import { realtimeRouter } from './routes/realtime';
 import { relationsRouter } from './routes/relations';
 import { rolesRouter } from './routes/roles';
 import { healthRouter } from './routes/health';
@@ -20,9 +23,12 @@ import { mediaRouter } from './routes/media';
 import { metricsRouter, withMetrics } from './routes/metrics';
 import { searchRouter } from './routes/search';
 import { settingsRouter } from './routes/settings';
+import { teamsRouter } from './routes/teams';
 import { translationsRouter } from './routes/translations';
 import { typegenRouter } from './routes/typegen';
+import { usersRouter } from './routes/users';
 import { utilsRouter } from './routes/utils';
+import { webhooksRouter } from './routes/webhooks';
 
 const app = new Hono<AppEnv>();
 
@@ -66,6 +72,12 @@ api.route('/media', mediaRouter);
 api.route('/presets', presetsRouter);
 api.route('/translations', translationsRouter);
 api.route('/settings', settingsRouter);
+api.route('/users', usersRouter);
+api.route('/teams', teamsRouter);
+api.route('/files', filesRouter);
+api.route('/webhooks', webhooksRouter);
+api.route('/activity', activityRouter);
+api.route('/realtime', realtimeRouter);
 
 app.route('/api/v1', api);
 

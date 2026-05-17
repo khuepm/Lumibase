@@ -19,8 +19,8 @@ interface ModuleDef {
 
 const MODULES: ModuleDef[] = [
   { id: 'content', label: 'Content', icon: FileText, to: '/' },
-  { id: 'files', label: 'Files', icon: Layers, to: '/' },
-  { id: 'users', label: 'Users', icon: Users, to: '/' },
+  { id: 'files', label: 'Files', icon: Layers, to: '/files' },
+  { id: 'users', label: 'Users', icon: Users, to: '/users' },
   { id: 'access', label: 'Access', icon: ShieldCheck, to: '/access' },
   { id: 'data-model', label: 'Data model', icon: Database, to: '/data-model' },
   { id: 'settings', label: 'Settings', icon: Settings, to: '/settings/translations' },
@@ -42,7 +42,11 @@ export function AppShell({ children }: AppShellProps) {
       ? 'settings'
       : location.pathname.startsWith('/access')
         ? 'access'
-        : 'content';
+        : location.pathname.startsWith('/users')
+          ? 'users'
+          : location.pathname.startsWith('/files')
+            ? 'files'
+            : 'content';
 
   return (
     <div className="flex h-screen w-screen">

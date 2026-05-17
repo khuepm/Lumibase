@@ -19,6 +19,13 @@ import {
   PresetResource,
   TranslationResource,
   SettingResource,
+  UserResource,
+  TeamResource,
+  TeamMemberResource,
+  FolderResource,
+  FileResource,
+  WebhookResource,
+  ActivityResource,
 } from "../types";
 
 export function legacyRest() {
@@ -357,6 +364,109 @@ export function legacyRest() {
       delete: (key: string) => client.rawRequest<null>(`/api/v1/settings/${key}`, { method: "DELETE" }),
     };
 
+    const users = {
+      list: () => client.rawRequest<UserResource[]>("/api/v1/users"),
+      get: (id: string) => client.rawRequest<UserResource>(`/api/v1/users/${id}`),
+      invite: (input: { email: string; roleId?: string }) =>
+        client.rawRequest<UserResource>("/api/v1/users/invite", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: { roleId?: string | null; status?: string }) =>
+        client.rawRequest<{ id: string }>(`/api/v1/users/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/users/${id}`, { method: "DELETE" }),
+      impersonate: (id: string) =>
+        client.rawRequest<{ token: string }>(`/api/v1/users/${id}/impersonate`, { method: "POST" }),
+    };
+
+    const teams = {
+      list: () => client.rawRequest<TeamResource[]>("/api/v1/teams"),
+      get: (id: string) => client.rawRequest<TeamResource>(`/api/v1/teams/${id}`),
+      create: (input: { name: string; description?: string }) =>
+        client.rawRequest<TeamResource>("/api/v1/teams", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: { name?: string; description?: string }) =>
+        client.rawRequest<TeamResource>(`/api/v1/teams/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/teams/${id}`, { method: "DELETE" }),
+      members: {
+        list: (teamId: string) => client.rawRequest<TeamMemberResource[]>(`/api/v1/teams/${teamId}/members`),
+        add: (teamId: string, userId: string) =>
+          client.rawRequest<TeamMemberResource>(`/api/v1/teams/${teamId}/members`, {
+            method: "POST",
+            body: JSON.stringify({ userId }),
+          }),
+        remove: (teamId: string, userId: string) =>
+          client.rawRequest<null>(`/api/v1/teams/${teamId}/members/${userId}`, { method: "DELETE" }),
+      },
+    };
+
+    const folders = {
+      list: () => client.rawRequest<FolderResource[]>("/api/v1/files/folders"),
+      create: (input: { name: string; parent?: string | null }) =>
+        client.rawRequest<FolderResource>("/api/v1/files/folders", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: { name?: string; parent?: string | null }) =>
+        client.rawRequest<FolderResource>(`/api/v1/files/folders/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/files/folders/${id}`, { method: "DELETE" }),
+    };
+
+    const files = {
+      list: () => client.rawRequest<FileResource[]>("/api/v1/files"),
+      create: (input: Record<string, unknown>) =>
+        client.rawRequest<FileResource>("/api/v1/files", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: Record<string, unknown>) =>
+        client.rawRequest<FileResource>(`/api/v1/files/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/files/${id}`, { method: "DELETE" }),
+      getPresignedUrl: (filename: string) =>
+        client.rawRequest<{ url: string; method: string; key: string }>("/api/v1/files/presigned-url", {
+          method: "POST",
+          body: JSON.stringify({ filename }),
+        }),
+    };
+
+    const webhooks = {
+      list: () => client.rawRequest<WebhookResource[]>("/api/v1/webhooks"),
+      create: (input: Record<string, unknown>) =>
+        client.rawRequest<WebhookResource>("/api/v1/webhooks", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      update: (id: string, patch: Record<string, unknown>) =>
+        client.rawRequest<WebhookResource>(`/api/v1/webhooks/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+      delete: (id: string) => client.rawRequest<null>(`/api/v1/webhooks/${id}`, { method: "DELETE" }),
+    };
+
+    const activity = {
+      list: (params?: { limit?: number; offset?: number }) => {
+        const query = new URLSearchParams();
+        if (params?.limit) query.append("limit", params.limit.toString());
+        if (params?.offset) query.append("offset", params.offset.toString());
+        return client.rawRequest<ActivityResource[]>(`/api/v1/activity?${query.toString()}`);
+      },
+    };
+
     return {
       schema,
       items,
@@ -366,6 +476,20 @@ export function legacyRest() {
       presets,
       translations,
       settings,
+      users,
+      teams,
+      folders,
+      files,
+      webhooks,
+      activity,
+      realtime: {
+        connect: (siteId: string) => {
+          // This is a stub for the realtime client.
+          const wsUrl = client.baseUrl.replace(/^http/, 'ws') + '/api/v1/realtime?siteId=' + siteId;
+          const ws = new WebSocket(wsUrl);
+          return ws;
+        }
+      },
       auth: {
         me: () =>
           client.rawRequest<{

@@ -127,13 +127,13 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 
 ## Phase D — Users, Files, Settings (tuần 13-15)
 
-- [ ] `[BE]` `/users`, `/users/invite`, `/users/:id/impersonate`, sessions.
-- [ ] `[BE]` `/teams`, `/team_members`.
+- [x] `[BE]` `/users`, `/users/invite`, `/users/:id/impersonate`, sessions.
+- [x] `[BE]` `/teams`, `/team_members`.
 - [ ] `[BE]` Files: presigned R2 upload, `/files`, `/assets/:id` transform.
 - [ ] `[BE]` Settings storage + KV cache + `settings.changed` event.
 - [ ] `[BE]` Webhooks CRUD + dispatcher (Queues).
 - [ ] `[BE]` Activity log endpoint (filter, paginate).
-- [ ] `[FE]` Module Users + Teams.
+- [x] `[FE]` Module Users + Teams.
 - [ ] `[FE]` Module Files (grid + folders + drag-drop upload).
 - [ ] `[FE]` Module Settings (general, locales, security, files, webhooks, activity).
 - [ ] `[FE]` Notifications inbox (xem mục realtime).

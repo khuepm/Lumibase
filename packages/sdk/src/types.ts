@@ -219,3 +219,81 @@ export interface SettingResource {
   scope: string;
   updatedAt: string;
 }
+
+export interface UserResource {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  avatar: string | null;
+  status: string;
+  lastSeenAt: string | null;
+  roleId: string | null;
+  joinedAt: string;
+}
+
+export interface TeamResource {
+  id: string;
+  siteId: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+}
+
+export interface TeamMemberResource {
+  teamId: string;
+  userId: string;
+  addedAt: string;
+}
+
+export interface FolderResource {
+  id: string;
+  siteId: string;
+  name: string;
+  parent: string | null;
+  createdAt: string;
+}
+
+export interface FileResource {
+  id: string;
+  siteId: string;
+  storage: string;
+  filenameDisk: string;
+  filenameDownload: string;
+  mime: string;
+  filesize: number;
+  width: number | null;
+  height: number | null;
+  duration: number | null;
+  folder: string | null;
+  metadata: Record<string, unknown>;
+  uploadedBy: string | null;
+  createdAt: string;
+}
+
+export interface WebhookResource {
+  id: string;
+  siteId: string;
+  name: string;
+  url: string;
+  actions: string[];
+  collections: string[];
+  headers: Record<string, string>;
+  status: string;
+  secret: string | null;
+  createdAt: string;
+}
+
+export interface ActivityResource {
+  id: string;
+  siteId: string;
+  action: string;
+  userId: string | null;
+  collection: string | null;
+  itemId: string | null;
+  ip: string | null;
+  userAgent: string | null;
+  comment: string | null;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
