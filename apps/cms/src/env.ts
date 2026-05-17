@@ -1,4 +1,5 @@
 import type { Database } from '@lumibase/database';
+import type { RuntimeContext } from '@lumibase/runtime';
 
 /**
  * Cloudflare Worker bindings. Configure in `wrangler.toml`.
@@ -46,6 +47,8 @@ export interface Variables {
   auth: AuthPrincipal;
   /** Correlation id for log lines. */
   requestId: string;
+  /** Runtime context providing cache, storage, database, search, queue, and media adapters. */
+  runtime: RuntimeContext;
 }
 
 export type AppEnv = {
