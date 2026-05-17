@@ -34,19 +34,39 @@ interface FieldInterface<TOptions> {
 ```
 
 Danh sách interface MVP:
-- Text: `input`, `input-multiline`, `wysiwyg`, `markdown`, `code` (monaco), `slug`, `color`.
-- Number: `input-number`, `slider`, `rating`.
-- Choice: `select-dropdown`, `select-radio`, `select-checkbox`, `tags`.
-- Boolean: `toggle`.
-- Date: `datetime`, `date-range`.
-- Relation: `relation-m2o`, `relation-o2m`, `relation-m2m`, `relation-m2a`, `relation-tree`.
-- File: `file`, `file-image`, `file-multiple`.
-- Special: `json-raw`, `geometry-map`, `repeater`, `presentation-divider`, `presentation-notice`.
+- Text: `input` ✅, `input-multiline` ✅, `wysiwyg` ✅, `markdown` ✅, `code` (monaco) ✅, `slug` ✅, `color` ✅.
+- Number: `input-number` ✅, `slider` ⏳, `rating` ✅.
+- Choice: `select-dropdown` ✅, `select-radio` ⏳, `select-checkbox` ⏳, `tags` ✅.
+- Boolean: `toggle` ✅.
+- Date: `datetime` ✅, `date-range` ⏳.
+- Relation: `relation-m2o` ✅, `relation-o2m` ✅, `relation-m2m` ✅, `relation-m2a` ⏳, `relation-tree` ⏳.
+- File: `file` ✅, `file-image` ⏳ (covered by `file`), `file-multiple` ⏳.
+- Special: `json-raw` ✅, `geometry-map` ⏳, `repeater` ✅, `presentation-divider` ✅, `presentation-notice` ✅.
+
+> Source of truth: `apps/studio/src/modules/content/interfaces/registry.tsx`.
+> Authors pick interfaces from the **Field inspector** (Data Model → Collection → Fields → Add/Edit field).
 
 ## 3. Display registry
 
-- `formatted-value`, `raw`, `boolean-icon`, `datetime`, `image`, `labels`, `relation-related-values`, `mustache-template`.
+| Display | Implemented | File |
+|---|---|---|
+| `formatted-value` | ✅ Phase B | `displays/formatted-value.tsx` |
+| `raw` | ✅ Phase B | `displays/raw.tsx` |
+| `boolean-icon` | ✅ Phase A | `displays/boolean-icon.tsx` |
+| `datetime` (alias of `formatted-date`) | ✅ Phase A | `displays/formatted-date.tsx` |
+| `image` | ✅ Phase B | `displays/image.tsx` |
+| `labels` | ✅ Phase B | `displays/labels.tsx` |
+| `relation-related-values` | ✅ via `relation` | `displays/relation.tsx` |
+| `mustache-template` (alias of `mustache`) | ✅ Phase B | `displays/mustache.tsx` |
+| `badge` | ✅ Phase A | `displays/badge.tsx` |
+| `color-swatch` | ✅ Phase A | `displays/color-swatch.tsx` |
+| `rating-stars` | ✅ Phase A | `displays/rating-stars.tsx` |
+| `tags-pills` | ✅ Phase A | `displays/tags-pills.tsx` |
+
 - Display cho relation hỗ trợ **mustache** sử dụng `displayTemplate` của collection liên quan.
+- Authors edit `displayTemplate` qua **Display tab** của collection (Mustache template editor có
+  autocomplete + live preview, file: `modules/content/mustache-template-editor.tsx`).
+- `display` và `displayOptions` lưu ở top-level columns của bảng `fields` (xem `packages/database/src/schema/cms.ts`).
 
 ## 4. Per-field configuration
 
