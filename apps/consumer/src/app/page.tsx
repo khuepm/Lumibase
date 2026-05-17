@@ -10,15 +10,16 @@ const client = createLumiClient({
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  let posts: any[] = [];
+  let posts: Record<string, unknown>[] = [];
   let errorMsg = null;
 
   try {
     // Gọi API thông qua composable command readItems
     const res = await client.request(readItems("posts", { limit: 5 }));
     posts = res.data || [];
-  } catch (err: any) {
-    errorMsg = err.message || "Failed to fetch posts";
+  } catch (err: unknown) {
+    const e = err as Error;
+    errorMsg = e.message || "Failed to fetch posts";
   }
 
   return (
@@ -33,7 +34,7 @@ export default async function Home() {
 
         <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold tracking-tight">Dữ liệu từ Collection: "posts"</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Dữ liệu từ Collection: &ldquo;posts&rdquo;</h2>
             <div className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
               Live
             </div>
