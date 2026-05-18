@@ -129,46 +129,47 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 
 - [x] `[BE]` `/users`, `/users/invite`, `/users/:id/impersonate`, sessions.
 - [x] `[BE]` `/teams`, `/team_members`.
-- [ ] `[BE]` Files: presigned R2 upload, `/files`, `/assets/:id` transform.
-- [ ] `[BE]` Settings storage + KV cache + `settings.changed` event.
-- [ ] `[BE]` Webhooks CRUD + dispatcher (Queues).
-- [ ] `[BE]` Activity log endpoint (filter, paginate).
+- [x] `[BE]` Files: presigned R2 upload, `/files`, `/assets/:id` transform.
+- [x] `[BE]` Settings storage + KV cache + `settings.changed` event.
+- [x] `[BE]` Webhooks CRUD + dispatcher (Queues).
+- [x] `[BE]` Activity log endpoint (filter, paginate).
 - [x] `[FE]` Module Users + Teams.
-- [ ] `[FE]` Module Files (grid + folders + drag-drop upload).
-- [ ] `[FE]` Module Settings (general, locales, security, files, webhooks, activity).
-- [ ] `[FE]` Notifications inbox (xem mục realtime).
+- [x] `[FE]` Module Files (grid + folders + drag-drop upload).
+- [x] `[FE]` Module Settings (general, locales, security, files, webhooks, activity).
+- [x] `[FE]` Notifications inbox (xem mục realtime).
 
 ---
 
 ## Phase E — Realtime / WebSocket (tuần 16-17)
 
-- [ ] `[OPS]` Tạo Durable Object class `SiteRoom` (Wrangler binding).
-- [ ] `[BE]` Endpoint `/realtime` upgrade WS, route tới DO theo `siteId`.
-- [ ] `[BE]` Protocol subscribe/unsubscribe/presence (xem `features/websockets-realtime.md`).
-- [ ] `[BE]` Publish pipeline trong ItemService.commit().
-- [ ] `[BE]` Permission re-check khi fan-out event.
-- [ ] `[BE]` Rate limit + heartbeat.
-- [ ] `[SDK]` Client realtime trong `packages/sdk`.
-- [ ] `[FE]` Hook `useRealtimeSubscription`, `usePresence`.
-- [ ] `[FE]` Presence chip topbar + detail editor.
-- [ ] `[FE]` List view "Live mode" toggle.
-- [ ] `[FE]` Smart preset subscribe.
-- [ ] `[FE]` Notifications realtime.
+- [x] `[OPS]` Tạo Durable Object class `SiteRoom` (Wrangler binding).
+- [x] `[BE]` Endpoint `/realtime` upgrade WS, route tới DO theo `siteId`.
+- [x] `[BE]` Protocol subscribe/unsubscribe/presence (xem `features/websockets-realtime.md`).
+- [x] `[BE]` Publish pipeline trong ItemService.commit().
+- [x] `[BE]` Permission re-check khi fan-out event.
+- [x] `[BE]` Rate limit + heartbeat.
+- [x] `[SDK]` Client realtime trong `packages/sdk`.
+- [x] `[FE]` Hook `useRealtimeSubscription`, `usePresence`.
+- [x] `[FE]` Presence chip topbar + detail editor.
+- [x] `[FE]` List view "Live mode" toggle.
+- [x] `[FE]` Smart preset subscribe.
+- [x] `[FE]` Notifications realtime.
 
 ---
 
 ## Phase F — Extensions & Display Templates nâng cao (tuần 18-20)
 
-- [ ] `[DB]` Bảng `extensions`.
-- [ ] `[BE]` Extension uploader (multipart → R2) + manifest validator + capability registry.
-- [ ] `[BE]` Sandbox loader (dynamic import + proxy ctx + capability gate).
-- [ ] `[BE]` Hook dispatcher tích hợp ItemService (`before/after`).
-- [ ] `[BE]` Endpoint mount `/extensions/:name/*` từ extension type `endpoint`.
-- [ ] `[BE]` `/utils/render-template` hỗ trợ component DSL.
-- [ ] `[FE]` Module Settings → Extensions (upload, review caps, enable/disable, version).
-- [ ] `[FE]` Dynamic loader UI extensions (interface/display/layout/panel/module).
+- [x] `[DB]` Bảng `extensions`.
+- [x] `[BE]` Extension uploader (multipart → R2) + manifest validator + capability registry.
+- [x] `[BE]` Sandbox loader (dynamic import + proxy ctx + capability gate).
+- [x] `[BE]` Hook dispatcher tích hợp ItemService (`before/after`).
+- [x] `[BE]` Endpoint mount `/extensions/:name/*` từ extension type `endpoint`.
+- [x] `[BE]` `/utils/render-template` hỗ trợ component DSL.
+- [x] `[FE]` Module Settings → Extensions (upload, review caps, enable/disable, version).
+- [x] `[FE]` Dynamic loader UI extensions (interface/display/layout/panel/module).
 - [ ] `[FE]` Display template editor mode component (block builder).
-- [ ] `[DOC]` Tutorial "Build your first extension" trong `docs/features/extensions-system.md`.
+- [x] `[DOC]` Tutorial "Build your first extension" trong `docs/features/extensions-system.md`.
+
 
 ---
 
