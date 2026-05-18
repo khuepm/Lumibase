@@ -476,8 +476,8 @@ describe('MeiliSearchProvider', () => {
 
       const result = await provider.search<Article>('articles', 'hello');
 
-      expect(result.hits[0].title).toBe('Hello');
-      expect(result.hits[0].body).toBe('World');
+      expect(result.hits[0]!.title).toBe('Hello');
+      expect(result.hits[0]!.body).toBe('World');
     });
   });
 

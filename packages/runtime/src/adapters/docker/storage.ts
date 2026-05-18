@@ -38,7 +38,7 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async put(key: string, data: ReadableStream | Buffer, metadata?: Record<string, string>): Promise<void> {
-    const body = data instanceof Buffer ? data : Buffer.from(await this.streamToBuffer(data));
+    const body = Buffer.isBuffer(data) ? data : Buffer.from(await this.streamToBuffer(data as ReadableStream));
 
     await this.client.send(
       new PutObjectCommand({

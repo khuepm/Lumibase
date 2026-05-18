@@ -49,7 +49,9 @@ export class CloudflareStorageProvider implements StorageProvider {
     if (metadata) {
       options.customMetadata = metadata;
     }
-    await this.bucket.put(key, data, options);
+    // Convert Buffer to ArrayBuffer for R2 compatibility
+    const body = Buffer.isBuffer(data) ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer : data;
+    await this.bucket.put(key, body, options);
   }
 
   async get(key: string): Promise<StorageObject | null> {
