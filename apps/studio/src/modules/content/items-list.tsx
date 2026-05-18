@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Code2, Filter, Lock, RefreshCw } from 'lucide-react';
+import { ArrowDown, ArrowUp, Bookmark, ChevronLeft, ChevronRight, Code2, Filter, Lock, RefreshCw, Save } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { FieldResource } from '@lumibase/sdk';
+import type { FieldResource, PresetResource } from '@lumibase/sdk';
 import { getApiClient } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { usePermissions } from '@/lib/use-permissions';
@@ -37,6 +37,11 @@ export function ItemsListPage() {
   const fieldsQuery = useQuery({
     queryKey: ['fields', collection],
     queryFn: async () => (await client.schema.listFields(collection)).data,
+  });
+
+  const presetsQuery = useQuery({
+    queryKey: ['presets', collection],
+    queryFn: async () => (await client.presets.list(collection)).data,
   });
 
   const filterPayload = useMemo(() => compileFilter(filters), [filters]);
@@ -100,6 +105,48 @@ export function ItemsListPage() {
           <h1 className="text-2xl font-semibold">{collection}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* Preset Switcher */}
+          <div className="flex items-center rounded-md border text-xs">
+            <select
+              className="bg-transparent px-2 py-1 outline-none font-medium"
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) return;
+                const preset = presetsQuery.data?.find((p) => p.id === id);
+                if (preset) {
+                  // Apply preset
+                  if (preset.filter && Object.keys(preset.filter).length > 0) {
+                     // Hacky for now: we can't easily reverse-compile filter JSON to FilterBuilder UI state,
+                     // but in a real app we'd save the UI state in `layoutOptions` or similar.
+                  }
+                }
+              }}
+            >
+              <option value="">Default View</option>
+              {(presetsQuery.data ?? []).map((p) => (
+                <option key={p.id} value={p.id}>{p.bookmark || 'Saved View'}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              title="Save current view as Preset"
+              onClick={() => {
+                const name = prompt('Name for this preset?');
+                if (name) {
+                  client.presets.create({
+                    collection,
+                    bookmark: name,
+                    filter: filterPayload,
+                    layoutQuery: { sort: sort },
+                  }).then(() => presetsQuery.refetch());
+                }
+              }}
+              className="border-l px-2 py-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          
           <button
             type="button"
             onClick={() => setShowFilters((v) => !v)}

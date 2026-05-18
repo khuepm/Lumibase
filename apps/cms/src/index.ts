@@ -12,12 +12,15 @@ import { deliverRouter } from './routes/deliver';
 import { itemsRouter } from './routes/items';
 import { permissionsRouter } from './routes/permissions';
 import { policiesRouter } from './routes/policies';
+import { presetsRouter } from './routes/presets';
 import { relationsRouter } from './routes/relations';
 import { rolesRouter } from './routes/roles';
 import { healthRouter } from './routes/health';
 import { mediaRouter } from './routes/media';
 import { metricsRouter, withMetrics } from './routes/metrics';
 import { searchRouter } from './routes/search';
+import { settingsRouter } from './routes/settings';
+import { translationsRouter } from './routes/translations';
 import { typegenRouter } from './routes/typegen';
 import { utilsRouter } from './routes/utils';
 
@@ -60,6 +63,9 @@ api.route('/permissions', permissionsRouter);
 api.route('/search', searchRouter);
 api.route('/media', mediaRouter);
 // Future routers: presets, translations, ...
+api.route('/presets', presetsRouter);
+api.route('/translations', translationsRouter);
+api.route('/settings', settingsRouter);
 
 app.route('/api/v1', api);
 

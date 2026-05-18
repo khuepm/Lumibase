@@ -23,7 +23,7 @@ const MODULES: ModuleDef[] = [
   { id: 'users', label: 'Users', icon: Users, to: '/' },
   { id: 'access', label: 'Access', icon: ShieldCheck, to: '/access' },
   { id: 'data-model', label: 'Data model', icon: Database, to: '/data-model' },
-  { id: 'settings', label: 'Settings', icon: Settings, to: '/' },
+  { id: 'settings', label: 'Settings', icon: Settings, to: '/settings/translations' },
 ];
 
 interface AppShellProps {
@@ -74,7 +74,7 @@ export function AppShell({ children }: AppShellProps) {
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
-            Phase 0 skeleton — login &amp; routing land next.
+            Phase C2 — Presets &amp; Translations
           </div>
         </header>
 
