@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lumibase
+      POSTGRES_USER: lumibase
+      POSTGRES_PASSWORD: lumibase_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumibase"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.7
+    environment:
+      MEILI_MASTER_KEY: lumibase_dev_key
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilidata:/meili_data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    environment:
+      IMGPROXY_KEY: ${IMGPROXY_KEY:-736563726574}
+      IMGPROXY_SALT: ${IMGPROXY_SALT:-736563726574}
+      IMGPROXY_USE_S3: "true"
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      IMGPROXY_S3_ENDPOINT: http://minio:9000
+    ports:
+      - "8080:8080"
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  cms:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      LUMIBASE_RUNTIME: docker
+      DATABASE_URL: postgresql://lumibase:lumibase_dev@postgres:5432/lumibase
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: lumibase-media
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: lumibase_dev_key
+      IMGPROXY_URL: http://imgproxy:8080
+      IMGPROXY_KEY: "736563726574"
+      IMGPROXY_SALT: "736563726574"
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../apps/cms/src:/app/apps/cms/src
+      - ../packages:/app/packages
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+
+  bull-board:
+    image: deadly0/bull-board:latest
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "3001:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  miniodata:
+  meilidata:
