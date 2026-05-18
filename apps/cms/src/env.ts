@@ -1,4 +1,5 @@
 import type { Database } from '@lumibase/database';
+import type { RuntimeContext } from '@lumibase/runtime';
 
 /**
  * Cloudflare Worker bindings. Configure in `wrangler.toml`.
@@ -9,9 +10,13 @@ import type { Database } from '@lumibase/database';
  */
 export interface Bindings {
   HYPERDRIVE?: Hyperdrive;
+  /** @deprecated Use `c.get('runtime').cache` (CacheProvider) instead of accessing KV directly. */
   CONFIG_CACHE?: KVNamespace;
+  /** @deprecated Use `c.get('runtime').storage` (StorageProvider) instead of accessing R2 directly. */
   MEDIA?: R2Bucket;
   LUMIBASE_ENV: string;
+  /** Runtime mode: `'cloudflare'` or `'docker'`. Defaults to `'docker'`. */
+  LUMIBASE_RUNTIME?: string;
   /** Logto OIDC issuer, e.g. https://auth.lumibase.dev/oidc */
   LOGTO_ISSUER?: string;
   /** Expected `aud` claim, e.g. https://api.lumibase.dev */
@@ -46,6 +51,8 @@ export interface Variables {
   auth: AuthPrincipal;
   /** Correlation id for log lines. */
   requestId: string;
+  /** Runtime context providing cache, storage, database, search, queue, and media adapters. */
+  runtime: RuntimeContext;
 }
 
 export type AppEnv = {

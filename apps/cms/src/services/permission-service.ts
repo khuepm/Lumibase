@@ -10,7 +10,7 @@ import {
   type Database,
 } from '@lumibase/database';
 import type { PolicyRule } from '@lumibase/shared';
-import type { KVNamespace } from '@cloudflare/workers-types';
+import type { CacheProvider } from '@lumibase/runtime';
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import {
   applyFieldMask,
@@ -63,7 +63,7 @@ export interface PermissionBundle {
 
 export interface PermissionServiceDeps {
   db: Database;
-  cache?: KVNamespace;
+  cache?: CacheProvider;
   ctx: MagicContext;
 }
 
@@ -87,11 +87,11 @@ export class PermissionService {
     if (this.compiled) return this.compiled;
 
     if (this.deps.cache) {
-      const cached = await this.deps.cache.get(
+      const cached = await this.deps.cache.get<PermissionBundle>(
         cacheKey(this.deps.ctx.siteId, this.principalKey),
       );
       if (cached) {
-        this.compiled = JSON.parse(cached) as PermissionBundle;
+        this.compiled = cached;
         return this.compiled;
       }
     }
@@ -99,10 +99,10 @@ export class PermissionService {
     this.compiled = await this.compile();
 
     if (this.deps.cache) {
-      await this.deps.cache.put(
+      await this.deps.cache.set(
         cacheKey(this.deps.ctx.siteId, this.principalKey),
         JSON.stringify(this.compiled),
-        { expirationTtl: CACHE_TTL_SECONDS },
+        { ttl: CACHE_TTL_SECONDS },
       );
     }
     return this.compiled;

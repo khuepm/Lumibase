@@ -1,0 +1,18 @@
+version: '3.8'
+
+# Production-like override for local testing.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+#
+# Differences from dev:
+# - Uses the production multi-stage Dockerfile (no hot-reload)
+# - No source code volume mounts
+# - NODE_ENV=production
+
+services:
+  cms:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      NODE_ENV: production
+    volumes: []

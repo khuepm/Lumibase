@@ -19,13 +19,16 @@
     "clean": "rm -rf .turbo .wrangler dist"
   },
   "dependencies": {
+    "@hono/node-server": "^1.12.0",
     "@lumibase/database": "workspace:*",
+    "@lumibase/runtime": "workspace:*",
     "@lumibase/sdk": "workspace:*",
     "@lumibase/shared": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.5",
     "jose": "^5.9.6",
     "nanoid": "^5.0.7",
+    "prom-client": "^15.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

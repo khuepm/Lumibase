@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import type { AppEnv } from '../env';
 import { SchemaService, SchemaServiceError } from '../services/schema-service';
@@ -62,11 +62,11 @@ const schemaInputSchema = collectionInputSchema
     fields: z.array(fieldInputSchema).optional(),
   });
 
-const buildService = (c: { get: AppEnv['Variables'] extends infer V ? (k: keyof V) => V[keyof V] : never; env: AppEnv['Bindings'] }) =>
+const buildService = (c: Context<AppEnv>) =>
   new SchemaService({
     db: c.get('db') as never,
     siteId: c.get('siteId') as unknown as string,
-    cache: c.env.CONFIG_CACHE,
+    cache: c.get('runtime').cache,
   });
 
 const toError = (err: unknown) => {

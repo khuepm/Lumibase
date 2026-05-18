@@ -22,10 +22,10 @@ export const withTenant = (): MiddlewareHandler<AppEnv> => async (c, next) => {
   const host = c.req.header('host') ?? '';
   const sub = host.split('.')[0];
   if (sub && sub !== 'api' && sub !== 'localhost' && sub !== '127') {
-    // Phase A: resolve via CONFIG_CACHE KV: `site-domain:<subdomain>` -> siteId.
-    const kv = c.env.CONFIG_CACHE;
-    if (kv) {
-      const mapped = await kv.get(`site-domain:${sub}`);
+    // Resolve via CacheProvider: `site-domain:<subdomain>` -> siteId.
+    const cache = c.get('runtime')?.cache;
+    if (cache) {
+      const mapped = await cache.get<string>(`site-domain:${sub}`);
       if (mapped) {
         c.set('siteId', mapped);
         return next();

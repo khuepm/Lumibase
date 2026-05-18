@@ -43,6 +43,7 @@ const bulkSchema = z.object({
 
 const buildService = (c: Context<AppEnv>) => {
   const auth = c.get('auth');
+  const runtime = c.get('runtime');
   const headers: Record<string, string> = {};
   c.req.raw.headers.forEach((value, key) => {
     headers[key.toLowerCase()] = value;
@@ -51,7 +52,9 @@ const buildService = (c: Context<AppEnv>) => {
     db: c.get('db'),
     siteId: c.get('siteId'),
     userId: auth?.userId ?? null,
-    cache: c.env.CONFIG_CACHE,
+    cache: runtime.cache,
+    search: runtime.search,
+    queue: runtime.queue,
     permissionCtx: {
       userId: auth?.userId ?? null,
       siteId: c.get('siteId'),
