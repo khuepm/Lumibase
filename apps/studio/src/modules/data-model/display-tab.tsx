@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { getApiClient } from '@/lib/api';
 import { DISPLAY_CATALOGUE } from '@/modules/content/displays/registry';
-import { MustacheTemplateEditor } from '@/modules/content/mustache-template-editor';
+import { DisplayTemplateEditor } from '@/modules/content/display-template-editor';
 
 interface DisplayTabProps {
   collectionName: string;
@@ -78,17 +78,17 @@ export function DisplayTab({ collectionName }: DisplayTabProps) {
             {saveMutation.isPending ? 'Saving…' : dirty ? 'Save' : 'Saved'}
           </button>
         </header>
-        <MustacheTemplateEditor
-          value={template}
-          onChange={setTemplate}
+        <DisplayTemplateEditor
+          value={template || null}
+          onChange={(next) => setTemplate(next ?? '')}
           fields={fields.map((f) => ({
             name: f.name,
+            type: f.type,
             hint: `${f.type}/${f.interface}`,
           }))}
           sample={Object.fromEntries(
             fields.map((f) => [f.name, sampleFor(f.type, f.name)]),
           )}
-          placeholder="{{title}} — {{slug}}"
         />
       </section>
 

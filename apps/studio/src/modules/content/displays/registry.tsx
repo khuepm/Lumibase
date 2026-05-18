@@ -12,6 +12,7 @@ import { RawDisplay } from './raw';
 import { RelationDisplay } from './relation';
 import { TagsPillsDisplay } from './tags-pills';
 import { TextDisplay } from './text';
+import { ComponentTemplateDisplay } from './component-template';
 import { readDisplayKey, type DisplayComponent } from './types';
 
 /**
@@ -37,6 +38,9 @@ const REGISTRY: Record<string, DisplayComponent<any>> = {
   raw: RawDisplay,
   image: ImageDisplay,
   labels: LabelsDisplay,
+  // Phase F — Component DSL display.
+  'component-template': ComponentTemplateDisplay,
+
   // Aliases so the doc-canonical names resolve too.
   datetime: FormattedDateDisplay,
   'mustache-template': MustacheDisplay,
@@ -88,6 +92,7 @@ export const DISPLAY_CATALOGUE: Array<{ id: string; label: string; hint: string 
   { id: 'image', label: 'Image', hint: 'Thumbnail for file/url values.' },
   { id: 'relation', label: 'Relation', hint: 'Resolve id → related collection field.' },
   { id: 'mustache-template', label: 'Mustache template', hint: 'Compose a row template like `{{title}} ({{slug}})`.' },
+  { id: 'component-template', label: 'Component template', hint: 'Visual block-based template (Phase F).' },
 ];
 
 export const DISPLAY_NAMES = Object.keys(REGISTRY);

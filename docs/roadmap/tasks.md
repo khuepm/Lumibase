@@ -167,7 +167,7 @@ Mục tiêu: triển khai hệ phân quyền field-level + row-level + policy co
 - [x] `[BE]` `/utils/render-template` hỗ trợ component DSL.
 - [x] `[FE]` Module Settings → Extensions (upload, review caps, enable/disable, version).
 - [x] `[FE]` Dynamic loader UI extensions (interface/display/layout/panel/module).
-- [ ] `[FE]` Display template editor mode component (block builder).
+- [x] `[FE]` Display template editor mode component (block builder).
 - [x] `[DOC]` Tutorial "Build your first extension" trong `docs/features/extensions-system.md`.
 
 
