@@ -1,0 +1,123 @@
+name: Docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build only (PR)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Load image for health check (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: lumibase-health-check:local
+          cache-from: type=gha
+          load: true
+
+      - name: Run container health check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}"
+          else
+            IMAGE_TAG="lumibase-health-check:local"
+          fi
+
+          docker run -d --name lumibase-health \
+            -p 3000:3000 \
+            -e LUMIBASE_RUNTIME=docker \
+            -e DATABASE_URL=postgresql://localhost:5432/lumibase \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e S3_ENDPOINT=http://localhost:9000 \
+            -e S3_ACCESS_KEY=minioadmin \
+            -e S3_SECRET_KEY=minioadmin \
+            -e S3_BUCKET=lumibase-media \
+            -e MEILISEARCH_HOST=http://localhost:7700 \
+            -e MEILISEARCH_API_KEY=test \
+            -e IMGPROXY_URL=http://localhost:8080 \
+            -e IMGPROXY_KEY=736563726574 \
+            -e IMGPROXY_SALT=736563726574 \
+            -e SKIP_MIGRATIONS=true \
+            "$IMAGE_TAG"
+
+          echo "Waiting for container to start..."
+          sleep 5
+
+          MAX_RETRIES=6
+          RETRY_COUNT=0
+          until curl -sf http://localhost:3000/health > /dev/null 2>&1; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+              echo "Health check failed after $MAX_RETRIES attempts"
+              docker logs lumibase-health
+              exit 1
+            fi
+            echo "Attempt $RETRY_COUNT/$MAX_RETRIES - waiting..."
+            sleep 5
+          done
+
+          echo "Health check passed!"
+          docker stop lumibase-health
+          docker rm lumibase-health
